@@ -91,7 +91,7 @@ for e in events:
     by_country[country].append(e)
 for country in by_country:
     by_country[country].sort(key=lambda e: e.get("starts") or "")
-sorted_countries = sorted(by_country.keys())
+sorted_countries = sorted(by_country.keys(), key=lambda c: (0 if c == "Sweden" else 1, c))
 
 # ── Build HTML ─────────────────────────────────────────────
 now_str = datetime.now().strftime("%d %b %Y %H:%M")
