@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Upcoming SRA Matches</title>
+<style>
+  :root {
+    --bg: #0d0f1a; --surface: #151828; --surface2: #1e2235;
+    --accent: #e63946; --amber: #f4a261; --green: #2dc653;
+    --text: #e8e8f0; --text2: #7a7d99; --border: #252840;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: var(--bg); color: var(--text); padding: 32px 24px; }
+  h1 { font-size: 1.6rem; margin-bottom: 4px; }
+  .meta { color: var(--text2); font-size: 0.85rem; margin-bottom: 16px; }
+  .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 360px; }
+  .search-wrap input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 8px 12px 8px 34px; border-radius: 8px;
+    font-size: 0.88rem; outline: none;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap::before { content: "⌕"; position: absolute; left: 10px; top: 50%;
+    transform: translateY(-50%); color: var(--text2); font-size: 1rem; pointer-events: none; }
+  .filter-btns { display: flex; gap: 6px; }
+  .filter-btns button {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
+    padding: 7px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 700;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .filter-btns button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filter-btns button:hover:not(.active) { border-color: var(--text2); color: var(--text); }
+  .count { color: var(--text2); font-size: 0.82rem; margin-left: auto; }
+  .wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th {
+    text-align: left; padding: 10px 14px; color: var(--text2); font-weight: 600;
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border); white-space: nowrap;
+    cursor: pointer; user-select: none;
+  }
+  th:last-child { cursor: default; }
+  th.sort-asc::after  { content: " ▲"; color: var(--accent); }
+  th.sort-desc::after { content: " ▼"; color: var(--accent); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:hover td { background: var(--surface); }
+  tr.country-row td {
+    background: var(--surface2); color: var(--amber);
+    font-weight: 700; font-size: 0.8rem; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 8px 14px; border-bottom: none;
+  }
+  td.name { font-weight: 600; color: var(--text); }
+  .reg-open  { color: var(--green); font-size: 0.78rem; font-weight: 700; }
+  .reg-closed { color: var(--text2); font-size: 0.78rem; font-weight: 700; }
+  tr.row-open  td:first-child { border-left: 3px solid var(--green); }
+  tr.row-closed td:first-child { border-left: 3px solid #2d3055; }
+  tr.row-open { background: rgba(45,198,83,0.03); }
+  .reg-btn {
+    display: inline-block; background: var(--accent); color: #fff;
+    text-decoration: none; font-size: 0.78rem; font-weight: 700;
+    padding: 5px 12px; border-radius: 6px; white-space: nowrap;
+  }
+  .reg-btn:hover { opacity: 0.85; }
+  small { display: block; margin-top: 4px; }
+  .no-results { text-align: center; color: var(--text2); padding: 40px; display: none; }
+  @media (max-width: 700px) { body { padding: 16px; } td, th { padding: 8px; } }
+</style>
+</head>
+<body>
+<h1>Upcoming SRA Matches</h1>
+<div class="meta">Generated 03 Jun 2026 07:54 &nbsp;·&nbsp; 98 matches found</div>
+<div class="toolbar">
+  <div class="search-wrap"><input type="text" id="search" placeholder="Search matches or countries…" autocomplete="off"></div>
+  <div class="filter-btns">
+    <button class="active" data-filter="all">All</button>
+    <button data-filter="open">Reg. Open</button>
+  </div>
+  <span class="count" id="count"></span>
+</div>
+<div class="wrap">
+<table id="tbl">
+<thead>
+  <tr>
+    <th data-col="0">Match</th>
+    <th data-col="1">Date</th>
+    <th data-col="2">Registration</th>
+    <th data-col="3">Venue</th>
+    <th data-col="4">Organizer</th>
+    <th data-col="5">Competitors</th>
+    <th></th>
+  </tr>
+</thead>
+<tbody id="tbody">
+<tr class="country-row"><td colspan="7">Estonia</td></tr>
+<tr class="row-open">
+  <td class="name">Punkrisoojus</td>
+  <td>04 Jun 2026 – TBD</td>
+  <td>26 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Harju Reservväelaste Laskespordiklubi</td>
+  <td>19</td>
+  <td><a href="https://shootnscoreit.com/event/22/28590/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Karude SRA</td>
+  <td>13 Jun 2026 – 13 Jun 2026</td>
+  <td>10 May 2026 – 10 Jun 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Karude karjäär</td>
+  <td>Männiku Reservväelaste Laskespordiklubi</td>
+  <td>9</td>
+  <td><a href="https://shootnscoreit.com/event/22/28381/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">18JUN26 Kärajad</td>
+  <td>18 Jun 2026 – 18 Jun 2026</td>
+  <td>02 Jun 2026 – 18 Jun 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>50m vallid</td>
+  <td>Tallinna Reservväelaste Laskespordiklubi</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28681/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">JAANI SÜOMA-JUOMA. LÄBI! Püstol. FM9.</td>
+  <td>27 Jun 2026 – TBD</td>
+  <td>30 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Raba 1a.</td>
+  <td>Team Old Dogs SRA Laskespordiklubi</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28650/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Eesti Meistrivõistlused 2026</td>
+  <td>22 Aug 2026 – TBD</td>
+  <td>19 Jan 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Eesti Reservväelaste Pärnu Laskespordikl</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27136/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="country-row"><td colspan="7">Finland</td></tr>
+<tr class="row-open">
+  <td class="name">Loppi 299m</td>
+  <td>03 Jun 2026 – TBD</td>
+  <td>25 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Espoon Reserviläiset ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28575/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">TurRes SRA Salo Hevonpää Pistooli 4.6</td>
+  <td>04 Jun 2026 – 04 Jun 2026</td>
+  <td>01 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27916/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">SRA Pirkanmaa viikkokisa 04.06.2026</td>
+  <td>04 Jun 2026 – TBD</td>
+  <td>01 Jun 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28667/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Jämsän Res viikkotreeni 4.6.26</td>
+  <td>04 Jun 2026 – TBD</td>
+  <td>31 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28660/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">ORES Viikkokilpailu #20</td>
+  <td>04 Jun 2026 – TBD</td>
+  <td>01 Jun 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Oriveden Reserviläiset ry</td>
+  <td>2</td>
+  <td><a href="https://shootnscoreit.com/event/22/28683/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Toiminta torstai 4.6</td>
+  <td>04 Jun 2026 – TBD</td>
+  <td>31 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Hämeenlinnan Reserviläiset - Aliups. ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28668/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Aittokoski SRA - RAATE 26</td>
+  <td>06 Jun 2026 – 06 Jun 2026</td>
+  <td>06 May 2026 – 05 Jun 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Aittokosken Ampumaurheilukeskus</td>
+  <td>Suomussalmen Reserviläiset ry</td>
+  <td>29</td>
+  <td><a href="https://shootnscoreit.com/event/22/28318/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Matinsuo SRA 2026</td>
+  <td>06 Jun 2026 – 07 Jun 2026</td>
+  <td>03 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Matinsuon Ampumakeskus</td>
+  <td>—</td>
+  <td>61</td>
+  <td><a href="https://shootnscoreit.com/event/22/28195/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">E-K SRA PM26 IMMOLA</td>
+  <td>06 Jun 2026 – TBD</td>
+  <td>12 Apr 2026 – 31 May 2026<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>Raja- ja merivartiokoulu</td>
+  <td>Lauritsalan Reserviläiset Ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27225/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">TurRes SRA Salo Haulikko Newbie 6.6</td>
+  <td>06 Jun 2026 – 06 Jun 2026</td>
+  <td>07 Apr 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27914/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">SC3/2026 Kesä-Piispa</td>
+  <td>07 Jun 2026 – TBD</td>
+  <td>24 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28537/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">K-P SRA Cup 2.kilpailu Ylivieska 7.6</td>
+  <td>07 Jun 2026 – TBD</td>
+  <td>16 Mar 2026 – 06 Jun 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Lakeuden Somottajat ry</td>
+  <td>46</td>
+  <td><a href="https://shootnscoreit.com/event/22/27276/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Harjavalta SRA kesä cup 2026, 3/6</td>
+  <td>07 Jun 2026 – TBD</td>
+  <td>31 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Harjavallan Reserviläiset ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27451/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Ilmajoki SRA 2026, Kesäkuu K+H(+K)</td>
+  <td>07 Jun 2026 – 07 Jun 2026</td>
+  <td>31 Mar 2026 – 07 Jun 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Tervahaminan ampumarata</td>
+  <td>Ilmajoen Reserviläiset ry</td>
+  <td>23</td>
+  <td><a href="https://shootnscoreit.com/event/22/26808/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">RoiRes SraCup kisa 3</td>
+  <td>07 Jun 2026 – 07 Jun 2026</td>
+  <td>27 Oct 2025 – 07 Jun 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Rovaniemen Reserviläiset</td>
+  <td>18</td>
+  <td><a href="https://shootnscoreit.com/event/22/26177/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">SA Viikkokisa 8/26</td>
+  <td>08 Jun 2026 – TBD</td>
+  <td>02 Jun 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Pori Katinkuru</td>
+  <td>SRA Pori</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28680/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Pohjanmaa SRA Kesäkuu 1</td>
+  <td>09 Jun 2026 – TBD</td>
+  <td>27 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Pohjanmaa SRA</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28300/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Kupari Cup Osakilpailu 2</td>
+  <td>10 Jun 2026 – 17 Aug 2026</td>
+  <td>26 May 2026 – 17 Aug 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Haapajärven-Reisjärven reserviläiset</td>
+  <td>14</td>
+  <td><a href="https://shootnscoreit.com/event/22/28210/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">SRA Vaasa - Kesä 1</td>
+  <td>10 Jun 2026 – TBD</td>
+  <td>31 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Merenkurkun Reserviläiset ry</td>
+  <td>5</td>
+  <td><a href="https://shootnscoreit.com/event/22/28659/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">TurRes SRA Salo Hevonpää Haulikko 11.6</td>
+  <td>11 Jun 2026 – 11 Jun 2026</td>
+  <td>11 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27917/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">KKC 2/2026 Iisalmi Operation GOOSELAKE 3</td>
+  <td>13 Jun 2026 – 14 Jun 2026</td>
+  <td>24 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28501/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">YT Cup #2</td>
+  <td>13 Jun 2026 – TBD</td>
+  <td>22 Mar 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Ylitornion reserviyhdistykset</td>
+  <td>10</td>
+  <td><a href="https://shootnscoreit.com/event/22/27761/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Kauhava SRA viikkokilpailu 13.6.2026</td>
+  <td>13 Jun 2026 – TBD</td>
+  <td>10 Jan 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Kauhava SRA</td>
+  <td>1</td>
+  <td><a href="https://shootnscoreit.com/event/22/26955/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">SRA Säkylä liikemaalirata 14.6.2026</td>
+  <td>14 Jun 2026 – TBD</td>
+  <td>05 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/26519/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">JäresCup II 2026</td>
+  <td>14 Jun 2026 – 14 Jun 2026</td>
+  <td>01 May 2026 – 13 Jun 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Lopen ampumaurheilukeskus</td>
+  <td>Järvenpään reserviläiset</td>
+  <td>26</td>
+  <td><a href="https://shootnscoreit.com/event/22/25864/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Alavus SRA 2026 - III</td>
+  <td>14 Jun 2026 – TBD</td>
+  <td>04 Dec 2025 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Alavuden Reserviläiset</td>
+  <td>7</td>
+  <td><a href="https://shootnscoreit.com/event/22/26552/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">RSA Kesäkuun kk-kisa</td>
+  <td>14 Jun 2026 – 14 Jun 2026</td>
+  <td>04 May 2026 – 12 Jun 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Rauman Seudun Urheiluampujat ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27228/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">UAY PKS kuukausikisa KESÄ 26 (su 14.6.)</td>
+  <td>14 Jun 2026 – TBD</td>
+  <td>02 Jun 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>UAY Pääkaupunkiseutu</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28672/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">TurRes SRA Salo Hevonpää Pistooli 18.6</td>
+  <td>18 Jun 2026 – 18 Jun 2026</td>
+  <td>18 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27918/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">Pohjanmaa SRA Kesäkuu 2</td>
+  <td>23 Jun 2026 – TBD</td>
+  <td>10 Jun 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Pohjanmaa SRA</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28301/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">TurRes SRA Salo Hevonpää Kivääri 25.6</td>
+  <td>25 Jun 2026 – 25 Jun 2026</td>
+  <td>25 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27923/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">Karhukeihäs #2 2026</td>
+  <td>26 Jun 2026 – TBD</td>
+  <td>03 May 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Pielisen SRA</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28290/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Keski-Pohjanmaan SRA PM 2026</td>
+  <td>27 Jun 2026 – 28 Jun 2026</td>
+  <td>29 Apr 2026 – 12 Jun 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Pietarsaaren Seudun Reserviläiset</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28084/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">LappiCup 2026 Keminmaa</td>
+  <td>27 Jun 2026 – 28 Jun 2026</td>
+  <td>26 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Ruottala</td>
+  <td>Keminmaan Reserviläiset</td>
+  <td>43</td>
+  <td><a href="https://shootnscoreit.com/event/22/28597/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">KirkRes Klubikisa 2 / 2026</td>
+  <td>27 Jun 2026 – TBD</td>
+  <td>03 Jun 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Kirkkonummen seudun Reserviläiset</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28687/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Kauhava SRA viikkokilpailu 27.6.2026</td>
+  <td>27 Jun 2026 – TBD</td>
+  <td>10 Jan 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Kauhava SRA</td>
+  <td>1</td>
+  <td><a href="https://shootnscoreit.com/event/22/26956/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">VaRes Cup 3 - 2026</td>
+  <td>28 Jun 2026 – TBD</td>
+  <td>28 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Vantaan Reserviläiset</td>
+  <td>1</td>
+  <td><a href="https://shootnscoreit.com/event/22/27576/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">SRA VAUK CUP 2026 3. kk-kilpailu</td>
+  <td>28 Jun 2026 – TBD</td>
+  <td>31 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Vatulan ampumaurheilukeskus, Teerinevantie 30, 39500 IKAALINEN</td>
+  <td>Ikaalisten Res ja ResUps ry:t</td>
+  <td>21</td>
+  <td><a href="https://shootnscoreit.com/event/22/28075/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">TurRes SRA Salo Hevonpää Haulikko 2.7</td>
+  <td>02 Jul 2026 – 02 Jul 2026</td>
+  <td>02 Jun 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27926/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Vares 2+1GUN 2026</td>
+  <td>04 Jul 2026 – 05 Jul 2026</td>
+  <td>04 May 2026 – 03 Jul 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Lopen ampumaurheilukeskus</td>
+  <td>Vantaan Reserviläiset</td>
+  <td>46</td>
+  <td><a href="https://shootnscoreit.com/event/22/27007/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Vatulan Hiekkamyrsky 2026 (SRA)</td>
+  <td>04 Jul 2026 – 05 Jul 2026</td>
+  <td>10 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Vatulan ampumaurheilukeskus, Teerinevantie 30, 39500 IKAALINEN</td>
+  <td>Ikaalisten Res ja ResUps ry:t</td>
+  <td>199</td>
+  <td><a href="https://shootnscoreit.com/event/22/27844/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Ilmajoki SRA 2026, Heinäkuu K+P+H</td>
+  <td>05 Jul 2026 – 05 Jul 2026</td>
+  <td>30 Apr 2026 – 05 Jul 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Tervahaminan ampumarata</td>
+  <td>Ilmajoen Reserviläiset ry</td>
+  <td>2</td>
+  <td><a href="https://shootnscoreit.com/event/22/26824/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">TurRes SRA Salo Hevonpää Pistooli 9.7</td>
+  <td>09 Jul 2026 – 09 Jul 2026</td>
+  <td>09 Jun 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27919/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">YT Cup #3</td>
+  <td>11 Jul 2026 – TBD</td>
+  <td>22 Mar 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Ylitornion reserviyhdistykset</td>
+  <td>2</td>
+  <td><a href="https://shootnscoreit.com/event/22/27762/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Kauhava SRA Cup 12.7.2026</td>
+  <td>12 Jul 2026 – TBD</td>
+  <td>10 Jan 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Kauhava SRA</td>
+  <td>1</td>
+  <td><a href="https://shootnscoreit.com/event/22/26957/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">SRA AK-kisa 6.0</td>
+  <td>12 Jul 2026 – TBD</td>
+  <td>01 Jun 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Harjavallan Reserviläiset ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27449/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">TurRes SRA Salo Hevonpää Pistooli 16.7</td>
+  <td>16 Jul 2026 – 16 Jul 2026</td>
+  <td>16 Jun 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27920/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">BEAR SRA HEINÄKUU 2026</td>
+  <td>18 Jul 2026 – 19 Jul 2026</td>
+  <td>24 May 2026 – 17 Jul 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Tyrrin Ampumakeskus, Utti</td>
+  <td>BEAR-15 Tactical ry.</td>
+  <td>29</td>
+  <td><a href="https://shootnscoreit.com/event/22/28515/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">HÄTILÄ26</td>
+  <td>18 Jul 2026 – 18 Jul 2026</td>
+  <td>02 May 2026 – 11 Jul 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Panssaritie 5, 13210 Hämeenlinna</td>
+  <td>Etelä-Häme SRA</td>
+  <td>39</td>
+  <td><a href="https://shootnscoreit.com/event/22/27610/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">RoiRes SraCup kisa 4</td>
+  <td>19 Jul 2026 – 19 Jul 2026</td>
+  <td>27 Oct 2025 – 05 Sep 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Rovaniemen Reserviläiset</td>
+  <td>8</td>
+  <td><a href="https://shootnscoreit.com/event/22/26178/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Alavus SRA 2026 - IV</td>
+  <td>19 Jul 2026 – TBD</td>
+  <td>04 Dec 2025 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Alavuden Reserviläiset</td>
+  <td>2</td>
+  <td><a href="https://shootnscoreit.com/event/22/26554/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">RSA Heinäkuun kk-kisa</td>
+  <td>19 Jul 2026 – 19 Jul 2026</td>
+  <td>15 Jun 2026 – 17 Jul 2026<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Rauman Seudun Urheiluampujat ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27229/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">Pohjanmaa SRA Heinäkuu 1</td>
+  <td>21 Jul 2026 – TBD</td>
+  <td>08 Jul 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Pohjanmaa SRA</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28302/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">Kupari Cup Osakilpailu 3</td>
+  <td>22 Jul 2026 – 22 Jul 2026</td>
+  <td>07 Jul 2026 – 22 Jul 2026<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28211/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">TurRes SRA Salo Hevonpää Kivääri 23.7</td>
+  <td>23 Jul 2026 – 23 Jul 2026</td>
+  <td>23 Jun 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27924/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Lappi-Cup Kittilä</td>
+  <td>25 Jul 2026 – TBD</td>
+  <td>01 Jun 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Kittilän reserviläiset</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28670/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">Harjoituskilpailu K+P Heinäkuu</td>
+  <td>25 Jul 2026 – TBD</td>
+  <td>19 Jul 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Kurikan Reserviupseerikerho Ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27128/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">SRA Säkylä liikemaalirata 26.7.2026</td>
+  <td>26 Jul 2026 – TBD</td>
+  <td>05 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28308/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">DRAFT: SRA VAUK CUP 2026 4. kk-kilpailu</td>
+  <td>26 Jul 2026 – TBD</td>
+  <td>28 Jun 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>Vatulan ampumaurheilukeskus, Teerinevantie 30, 39500 IKAALINEN</td>
+  <td>Ikaalisten Res ja ResUps ry:t</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28076/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">TurRes SRA Salo Hevonpää Haulikko 30.7</td>
+  <td>30 Jul 2026 – 30 Jul 2026</td>
+  <td>30 Jun 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27927/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Ruuti SRA 2/2026</td>
+  <td>01 Aug 2026 – 02 Aug 2026</td>
+  <td>24 May 2026 – 30 Jul 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Ruutikankaan Ampumaurheilukeskus</td>
+  <td>PohjanmaanAkateeminenMaanpuolustusseura</td>
+  <td>26</td>
+  <td><a href="https://shootnscoreit.com/event/22/28307/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">LappiCup 2026 Ylitornio</td>
+  <td>01 Aug 2026 – TBD</td>
+  <td>22 Mar 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Ylitornion reserviyhdistykset</td>
+  <td>6</td>
+  <td><a href="https://shootnscoreit.com/event/22/27763/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Kauhava SRA viikkokilpailu 1.8.2026</td>
+  <td>01 Aug 2026 – TBD</td>
+  <td>10 Jan 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Kauhava SRA</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/26958/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Ilmajoki SRA 2026, Elokuu K+P(+K)</td>
+  <td>02 Aug 2026 – 02 Aug 2026</td>
+  <td>30 Apr 2026 – 02 Aug 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Tervahaminan ampumarata</td>
+  <td>Ilmajoen Reserviläiset ry</td>
+  <td>2</td>
+  <td><a href="https://shootnscoreit.com/event/22/26825/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">Kupari Cup Osakilpailu 4</td>
+  <td>05 Aug 2026 – 05 Aug 2026</td>
+  <td>22 Jul 2026 – 10 Aug 2026<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Haapajärven-Reisjärven reserviläiset</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28212/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">TurRes SRA Salo Hevonpää Pistooli 6.8</td>
+  <td>06 Aug 2026 – 06 Aug 2026</td>
+  <td>06 Jul 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27921/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">SRA SM 2026 Syndalen</td>
+  <td>08 Aug 2026 – 09 Aug 2026</td>
+  <td>01 Jun 2026 – 03 Aug 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>Syndalen</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27898/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Alavus SRA 2026 - V</td>
+  <td>09 Aug 2026 – TBD</td>
+  <td>04 Dec 2025 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Alavuden Reserviläiset</td>
+  <td>2</td>
+  <td><a href="https://shootnscoreit.com/event/22/26555/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">TurRes SRA Salo Hevonpää Pistooli 13.8</td>
+  <td>13 Aug 2026 – 13 Aug 2026</td>
+  <td>13 Jul 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27922/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">SRA Säkylä liikemaalirata 16.8.2026</td>
+  <td>16 Aug 2026 – TBD</td>
+  <td>16 Jul 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/26523/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">TurRes SRA Salo Hevonpää Kivääri 20.8</td>
+  <td>20 Aug 2026 – 20 Aug 2026</td>
+  <td>20 Jul 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27925/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">Kauhava SRA HELA-sra CUP P+K+H 22.-23.8.</td>
+  <td>22 Aug 2026 – TBD</td>
+  <td>10 Jan 2026 – 16 Aug 2026<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Kauhava SRA</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/26959/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">RSA Satakunta Cup</td>
+  <td>23 Aug 2026 – 23 Aug 2026</td>
+  <td>20 Jul 2026 – 21 Aug 2026<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Rauman Seudun Urheiluampujat ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27230/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">RoiRes SraCup kisa 5</td>
+  <td>23 Aug 2026 – 23 Aug 2026</td>
+  <td>27 Oct 2025 – 05 Sep 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Rovaniemen Reserviläiset</td>
+  <td>5</td>
+  <td><a href="https://shootnscoreit.com/event/22/26179/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">TurRes SRA Salo Hevonpää Haulikko 27.8</td>
+  <td>27 Aug 2026 – 27 Aug 2026</td>
+  <td>27 Jul 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27928/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">Peräseinäjoen SRA Elokuu 2026 K+H</td>
+  <td>29 Aug 2026 – TBD</td>
+  <td>01 Jul 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Peräseinäjoen Reserviläiset ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27252/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">Harjoituskilpailu  Elokuu</td>
+  <td>29 Aug 2026 – TBD</td>
+  <td>23 Aug 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Kurikan Reserviupseerikerho Ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27129/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">VaRes Cup 4 - 2026</td>
+  <td>30 Aug 2026 – TBD</td>
+  <td>30 Jul 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Vantaan Reserviläiset</td>
+  <td>1</td>
+  <td><a href="https://shootnscoreit.com/event/22/27577/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">Harjavalta SRA kesä cup 2026, 5/6</td>
+  <td>30 Aug 2026 – TBD</td>
+  <td>23 Aug 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Harjavallan Reserviläiset ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27452/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">SRA Säkylä liikemaalirata 30.08.2026</td>
+  <td>30 Aug 2026 – TBD</td>
+  <td>30 Jul 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/26524/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">SRA VAUK CUP 2026 5. kk-kilpailu</td>
+  <td>30 Aug 2026 – TBD</td>
+  <td>02 Aug 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>Vatulan ampumaurheilukeskus, Teerinevantie 30, 39500 IKAALINEN</td>
+  <td>Ikaalisten Res ja ResUps ry:t</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/28077/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">Huissi XX Syys SRA</td>
+  <td>06 Sep 2026 – 06 Sep 2026</td>
+  <td>14 Jul 2026 – 25 Aug 2026<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>Tervahaminan ampumarata</td>
+  <td>Ilmajoen Reserviläiset ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/26828/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Rovajärvi 2026</td>
+  <td>12 Sep 2026 – TBD</td>
+  <td>02 Mar 2026 – 05 Sep 2026<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>2</td>
+  <td><a href="https://shootnscoreit.com/event/22/26180/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Kauhava SRA viikkokilpailu 12.9.2026</td>
+  <td>12 Sep 2026 – TBD</td>
+  <td>10 Jan 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Kauhava SRA</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/26961/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">Harjavalta SRA kesä cup 2026, 6/6</td>
+  <td>13 Sep 2026 – TBD</td>
+  <td>06 Sep 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Harjavallan Reserviläiset ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27453/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">SRA Säkylä liikemaalirata 13.09.2026</td>
+  <td>13 Sep 2026 – TBD</td>
+  <td>13 Aug 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/26525/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">RSA Syyskuun kk-kisa</td>
+  <td>20 Sep 2026 – 20 Sep 2026</td>
+  <td>24 Aug 2026 – 18 Sep 2026<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Rauman Seudun Urheiluampujat ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27231/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">Kauhava SRA CUP 26.9.2026</td>
+  <td>26 Sep 2026 – TBD</td>
+  <td>10 Jan 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>Kauhava SRA</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/26962/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="country-row"><td colspan="7">Sweden</td></tr>
+<tr class="row-open">
+  <td class="name">SCVM 2026 SRA-Match 3 LGSKF</td>
+  <td>07 Jun 2026 – TBD</td>
+  <td>01 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>https://maps.app.goo.gl/k5rLbKyyqTpPyFSF6</td>
+  <td>Livgardets Skytteförening</td>
+  <td>27</td>
+  <td><a href="https://shootnscoreit.com/event/22/26693/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-open">
+  <td class="name">SCVM 2026 SRA-Match 4 LedR TTS</td>
+  <td>27 Jun 2026 – TBD</td>
+  <td>19 May 2026 – TBD<br><small><span class="reg-open">● Open</span></small></td>
+  <td>—</td>
+  <td>LedR TTS</td>
+  <td>3</td>
+  <td><a href="https://shootnscoreit.com/event/22/26694/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">SCVM 2026 SRA-Match 5 Dala-MP.</td>
+  <td>30 Aug 2026 – TBD</td>
+  <td>30 Jul 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>—</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27820/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="row-closed">
+  <td class="name">SCVM 2026 SRA-Match 6 S:t Eskils</td>
+  <td>13 Sep 2026 – TBD</td>
+  <td>13 Aug 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>S:t Eskils Skyttar, Eskilstuna</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27048/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+<tr class="country-row"><td colspan="7">United States</td></tr>
+<tr class="row-closed">
+  <td class="name">Kurikka SRA 2026 Kesäkuu P+TA</td>
+  <td>27 Jun 2026 – TBD</td>
+  <td>21 Jun 2026 – TBD<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>—</td>
+  <td>Kurikan Reserviupseerikerho Ry</td>
+  <td>0</td>
+  <td><a href="https://shootnscoreit.com/event/22/27127/" target="_blank" class="reg-btn">View →</a></td>
+</tr>
+
+</tbody>
+</table>
+<div class="no-results" id="no-results">No matches found.</div>
+</div>
+<script>
+(function() {
+  var tbody   = document.getElementById('tbody');
+  var search  = document.getElementById('search');
+  var countEl = document.getElementById('count');
+  var noRes   = document.getElementById('no-results');
+  var filterBtns = document.querySelectorAll('[data-filter]');
+  var headers = document.querySelectorAll('th[data-col]');
+
+  var sortCol = -1, sortAsc = true;
+  var activeFilter = 'all';
+
+  // Build flat data rows from the rendered HTML so sorting works
+  // Each entry: { tr, country, sortKeys }
+  // We keep country-row tr's paired with their data rows.
+  function getGroups() {
+    var groups = [];
+    var currentCountry = '';
+    var currentCountryTr = null;
+    var rows = [];
+    Array.from(tbody.rows).forEach(function(tr) {
+      if (tr.classList.contains('country-row')) {
+        if (currentCountryTr) groups.push({ label: currentCountry, labelTr: currentCountryTr, rows: rows });
+        currentCountry = tr.cells[0].textContent.trim();
+        currentCountryTr = tr;
+        rows = [];
+      } else {
+        rows.push(tr);
+      }
+    });
+    if (currentCountryTr) groups.push({ label: currentCountry, labelTr: currentCountryTr, rows: rows });
+    return groups;
+  }
+
+  var allGroups = getGroups();
+
+  function cellText(tr, col) {
+    return tr.cells[col] ? tr.cells[col].textContent.trim() : '';
+  }
+
+  function applySort(rows) {
+    if (sortCol < 0) return rows;
+    return rows.slice().sort(function(a, b) {
+      var av = cellText(a, sortCol), bv = cellText(b, sortCol);
+      // numeric sort for competitors column (5)
+      if (sortCol === 5) {
+        av = parseInt(av) || 0; bv = parseInt(bv) || 0;
+        return sortAsc ? av - bv : bv - av;
+      }
+      return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+  }
+
+  function render() {
+    var q = search.value.toLowerCase().trim();
+    var frag = document.createDocumentFragment();
+    var shown = 0;
+
+    allGroups.forEach(function(group) {
+      // filter rows
+      var visible = group.rows.filter(function(tr) {
+        if (activeFilter === 'open' && !tr.classList.contains('row-open')) return false;
+        if (!q) return true;
+        var text = tr.textContent.toLowerCase();
+        return text.indexOf(q) >= 0 || group.label.toLowerCase().indexOf(q) >= 0;
+      });
+
+      if (visible.length === 0) return;
+
+      var sorted = applySort(visible);
+
+      // Only show country header when not sorting (sorting flattens view)
+      if (sortCol < 0) {
+        frag.appendChild(group.labelTr);
+      }
+      sorted.forEach(function(tr) { frag.appendChild(tr); });
+      shown += sorted.length;
+    });
+
+    tbody.innerHTML = '';
+    tbody.appendChild(frag);
+    countEl.textContent = shown + ' match' + (shown !== 1 ? 'es' : '');
+    noRes.style.display = shown === 0 ? 'block' : 'none';
+  }
+
+  search.addEventListener('input', render);
+
+  filterBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      filterBtns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeFilter = btn.dataset.filter;
+      render();
+    });
+  });
+
+  headers.forEach(function(th) {
+    th.addEventListener('click', function() {
+      var col = parseInt(th.dataset.col);
+      if (sortCol === col) {
+        sortAsc = !sortAsc;
+      } else {
+        sortCol = col; sortAsc = true;
+      }
+      headers.forEach(function(h) { h.classList.remove('sort-asc', 'sort-desc'); });
+      th.classList.add(sortAsc ? 'sort-asc' : 'sort-desc');
+      render();
+    });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
