@@ -162,6 +162,11 @@ html = f"""<!DOCTYPE html>
   }}
   .filter-btns button.active {{ background: var(--accent); border-color: var(--accent); color: #fff; }}
   .filter-btns button:hover:not(.active) {{ border-color: var(--text2); color: var(--text); }}
+  .country-select {{
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 12px; border-radius: 8px; font-size: 0.82rem; outline: none; cursor: pointer;
+  }}
+  .country-select:focus {{ border-color: var(--accent); }}
   .count {{ color: var(--text2); font-size: 0.82rem; margin-left: auto; }}
   .wrap {{ overflow-x: auto; }}
   table {{ width: 100%; border-collapse: collapse; font-size: 0.88rem; }}
@@ -207,6 +212,7 @@ html = f"""<!DOCTYPE html>
     <button class="active" data-filter="all">All</button>
     <button data-filter="open">Reg. Open</button>
   </div>
+  <select id="country-select" class="country-select"><option value="">All countries</option></select>
   <span class="count" id="count"></span>
 </div>
 <div class="wrap">
@@ -230,15 +236,17 @@ html = f"""<!DOCTYPE html>
 </div>
 <script>
 (function() {{
-  var tbody   = document.getElementById('tbody');
-  var search  = document.getElementById('search');
-  var countEl = document.getElementById('count');
-  var noRes   = document.getElementById('no-results');
-  var filterBtns = document.querySelectorAll('[data-filter]');
-  var headers = document.querySelectorAll('th[data-col]');
+  var tbody         = document.getElementById('tbody');
+  var search        = document.getElementById('search');
+  var countEl       = document.getElementById('count');
+  var noRes         = document.getElementById('no-results');
+  var filterBtns    = document.querySelectorAll('[data-filter]');
+  var headers       = document.querySelectorAll('th[data-col]');
+  var countrySelect = document.getElementById('country-select');
 
   var sortCol = -1, sortAsc = true;
-  var activeFilter = 'all';
+  var activeFilter  = 'all';
+  var activeCountry = '';
 
   // Build flat data rows from the rendered HTML so sorting works
   // Each entry: {{ tr, country, sortKeys }}
@@ -264,6 +272,14 @@ html = f"""<!DOCTYPE html>
 
   var allGroups = getGroups();
 
+  // Populate country dropdown
+  allGroups.forEach(function(group) {{
+    var opt = document.createElement('option');
+    opt.value = group.label;
+    opt.textContent = group.label;
+    countrySelect.appendChild(opt);
+  }});
+
   function cellText(tr, col) {{
     return tr.cells[col] ? tr.cells[col].textContent.trim() : '';
   }}
@@ -287,6 +303,7 @@ html = f"""<!DOCTYPE html>
     var shown = 0;
 
     allGroups.forEach(function(group) {{
+      if (activeCountry && group.label !== activeCountry) return;
       // filter rows
       var visible = group.rows.filter(function(tr) {{
         if (activeFilter === 'open' && !tr.classList.contains('row-open')) return false;
@@ -314,6 +331,11 @@ html = f"""<!DOCTYPE html>
   }}
 
   search.addEventListener('input', render);
+
+  countrySelect.addEventListener('change', function() {{
+    activeCountry = countrySelect.value;
+    render();
+  }});
 
   filterBtns.forEach(function(btn) {{
     btn.addEventListener('click', function() {{
