@@ -131,9 +131,10 @@ for country in sorted_countries:
 
         reg_badge  = '<span class="reg-open">● Open</span>' if reg_now else '<span class="reg-closed">● Closed</span>'
         row_class  = "row-open" if reg_now else "row-closed"
+        event_id   = str(e.get("id") or "")
         match_link = f'<a href="{esc(event_url)}" target="_blank" class="reg-btn">SSI</a>' if event_url else ""
 
-        rows_html += f"""<tr class="{row_class}">
+        rows_html += f"""<tr class="{row_class}" data-id="{event_id}">
   <td class="name">{name}</td>
   <td>{date}</td>
   <td>{reg_open} – {reg_close}<br><small>{reg_badge}</small></td>
@@ -237,6 +238,8 @@ html = f"""<!DOCTYPE html>
   .ical-icon {{ color: var(--text2); text-decoration: none; margin-right: 6px; font-size: 0.78em;
     opacity: 0.55; cursor: pointer; display: inline-block; vertical-align: middle; white-space: nowrap; }}
   .ical-icon:hover {{ opacity: 1; color: var(--accent); }}
+  .new-badge {{ background: var(--accent); color: #fff; font-size: 0.65rem; font-weight: 700;
+    padding: 1px 5px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.03em; }}
   small {{ display: block; margin-top: 4px; }}
   .no-results {{ text-align: center; color: var(--text2); padding: 40px; display: none; }}
   @media (max-width: 700px) {{
@@ -273,7 +276,7 @@ html = f"""<!DOCTYPE html>
 </head>
 <body>
 <h1>Upcoming SRA Matches</h1>
-<div class="meta">Generated {now_str} &nbsp;·&nbsp; {len(events)} matches found</div>
+<div class="meta">Generated {now_str} &nbsp;·&nbsp; {len(events)} matches found &nbsp;·&nbsp; <span id="next-update"></span></div>
 <div class="toolbar">
   <div class="search-wrap"><input type="text" id="search" placeholder="Search matches or countries…" autocomplete="off"></div>
   <div class="filter-btns">
@@ -319,6 +322,12 @@ html = f"""<!DOCTYPE html>
   var sortCol = -1, sortAsc = true;
   var activeFilter    = 'all';
   var activeCountries = new Set();
+  var NEW_TTL = 86400000;
+  var newSectionHdr = (function() {{
+    var tr = document.createElement('tr'); tr.className = 'country-row';
+    var td = document.createElement('td'); td.setAttribute('colspan', '7');
+    td.textContent = '🆕 New this update'; tr.appendChild(td); return tr;
+  }})();
 
   // Build flat data rows from the rendered HTML so sorting works
   // Each entry: {{ tr, country, sortKeys }}
@@ -464,30 +473,33 @@ html = f"""<!DOCTYPE html>
 
   function render() {{
     var q = search.value.toLowerCase().trim();
-    var frag = document.createDocumentFragment();
-    var shown = 0;
+    var newRows = [], mainItems = [], shown = 0;
 
     allGroups.forEach(function(group) {{
       if (activeCountries.size > 0 && !activeCountries.has(group.label)) return;
-      // filter rows
       var visible = group.rows.filter(function(tr) {{
         if (activeFilter === 'open' && !tr.classList.contains('row-open')) return false;
         if (!q) return true;
         var text = tr.textContent.toLowerCase();
         return text.indexOf(q) >= 0 || group.label.toLowerCase().indexOf(q) >= 0;
       }});
-
       if (visible.length === 0) return;
-
       var sorted = applySort(visible);
-
-      // Only show country header when not sorting (sorting flattens view)
-      if (sortCol < 0) {{
-        frag.appendChild(group.labelTr);
-      }}
-      sorted.forEach(function(tr) {{ frag.appendChild(tr); }});
-      shown += sorted.length;
+      if (sortCol < 0) mainItems.push({{ hdr: true, el: group.labelTr }});
+      sorted.forEach(function(tr) {{
+        var isNew = tr.classList.contains('row-new') && sortCol < 0;
+        if (isNew) newRows.push(tr);
+        mainItems.push({{ hdr: false, el: tr, isNew: isNew }});
+        shown++;
+      }});
     }});
+
+    var frag = document.createDocumentFragment();
+    if (newRows.length > 0) {{
+      frag.appendChild(newSectionHdr);
+      newRows.forEach(function(tr) {{ frag.appendChild(tr); }});
+    }}
+    mainItems.forEach(function(item) {{ if (!item.isNew) frag.appendChild(item.el); }});
 
     tbody.innerHTML = '';
     tbody.appendChild(frag);
@@ -520,6 +532,59 @@ html = f"""<!DOCTYPE html>
       render();
     }});
   }});
+
+  // ── New match detection (localStorage) ──────────────────────────────────────
+  (function() {{
+    allGroups.forEach(function(group) {{
+      group.rows.forEach(function(tr) {{
+        if (!tr.getAttribute('data-id')) {{
+          var a = tr.querySelector('a.reg-btn');
+          if (a) {{ var parts = a.href.split('/').filter(Boolean); var id = parts[parts.length - 1];
+            if (/^\\d+$/.test(id)) tr.setAttribute('data-id', id); }}
+        }}
+      }});
+    }});
+    var raw = localStorage.getItem('sra_seen'), seen = raw ? JSON.parse(raw) : null, now = Date.now();
+    var ids = new Set();
+    allGroups.forEach(function(g) {{ g.rows.forEach(function(tr) {{ var id = tr.getAttribute('data-id'); if (id) ids.add(id); }}); }});
+    if (!seen) {{
+      var s = {{}}; ids.forEach(function(id) {{ s[id] = 0; }});
+      localStorage.setItem('sra_seen', JSON.stringify(s)); return;
+    }}
+    var dirty = false;
+    ids.forEach(function(id) {{ if (!seen.hasOwnProperty(id)) {{ seen[id] = now; dirty = true; }} }});
+    Object.keys(seen).forEach(function(id) {{ if (!ids.has(id)) {{ delete seen[id]; dirty = true; }} }});
+    if (dirty) localStorage.setItem('sra_seen', JSON.stringify(seen));
+    allGroups.forEach(function(g) {{
+      g.rows.forEach(function(tr) {{
+        var id = tr.getAttribute('data-id');
+        if (id && seen[id] > 0 && (now - seen[id]) < NEW_TTL) {{
+          tr.classList.add('row-new');
+          var nc = tr.querySelector('td.name');
+          if (nc && !nc.querySelector('.new-badge')) {{
+            var b = document.createElement('span'); b.className = 'new-badge'; b.textContent = 'NEW';
+            nc.appendChild(b);
+          }}
+        }}
+      }});
+    }});
+  }})();
+
+  // ── Next update countdown ─────────────────────────────────────────────────
+  (function() {{
+    var el = document.getElementById('next-update'); if (!el) return;
+    function next6h() {{
+      var n = new Date(), h = n.getUTCHours(), nh = (Math.floor(h / 6) + 1) * 6, dd = nh >= 24 ? 1 : 0;
+      if (nh >= 24) nh = 0;
+      return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + dd, nh, 0, 0));
+    }}
+    function tick() {{
+      var diff = next6h() - new Date(); if (diff <= 0) {{ el.textContent = 'updating…'; return; }}
+      var h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
+      el.textContent = 'Next update ' + (h > 0 ? h + 'h ' : '') + m + 'm';
+    }}
+    tick(); setInterval(tick, 60000);
+  }})();
 
   render();
 }})();
