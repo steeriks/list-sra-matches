@@ -155,7 +155,7 @@
   </tr>
 </thead>
 <tbody id="tbody">
-<tr class="country-row"><td colspan="7">Sweden</td></tr>
+<tr class="country-row" data-c="Sweden"><td colspan="7">Sweden 🇸🇪</td></tr>
 <tr class="row-open">
   <td class="name">SCVM 2026 SRA-Match 3 LGSKF</td>
   <td>07 Jun 2026 – TBD</td>
@@ -192,7 +192,7 @@
   <td>0</td>
   <td><a href="https://shootnscoreit.com/event/22/27048/" target="_blank" class="reg-btn">SSI</a></td>
 </tr>
-<tr class="country-row"><td colspan="7">Estonia</td></tr>
+<tr class="country-row" data-c="Estonia"><td colspan="7">Estonia 🇪🇪</td></tr>
 <tr class="row-open">
   <td class="name">Punkrisoojus</td>
   <td>04 Jun 2026 – TBD</td>
@@ -238,7 +238,7 @@
   <td>0</td>
   <td><a href="https://shootnscoreit.com/event/22/27136/" target="_blank" class="reg-btn">SSI</a></td>
 </tr>
-<tr class="country-row"><td colspan="7">Finland</td></tr>
+<tr class="country-row" data-c="Finland"><td colspan="7">Finland 🇫🇮</td></tr>
 <tr class="row-open">
   <td class="name">Test</td>
   <td>04 Jun 2026 – TBD</td>
@@ -1031,7 +1031,7 @@
   <td>0</td>
   <td><a href="https://shootnscoreit.com/event/22/26525/" target="_blank" class="reg-btn">SSI</a></td>
 </tr>
-<tr class="country-row"><td colspan="7">United States</td></tr>
+<tr class="country-row" data-c="United States"><td colspan="7">United States 🇺🇸</td></tr>
 <tr class="row-closed">
   <td class="name">Kurikka SRA 2026 Kesäkuu P+TA</td>
   <td>27 Jun 2026 – TBD</td>
@@ -1072,7 +1072,7 @@
     Array.from(tbody.rows).forEach(function(tr) {
       if (tr.classList.contains('country-row')) {
         if (currentCountryTr) groups.push({ label: currentCountry, labelTr: currentCountryTr, rows: rows });
-        currentCountry = tr.cells[0].textContent.trim();
+        currentCountry = tr.getAttribute('data-c') || tr.cells[0].textContent.trim();
         currentCountryTr = tr;
         rows = [];
       } else {
@@ -1151,13 +1151,19 @@
   };
   function updateTrigger() {
     var n = activeCountries.size;
-    countryTrigger.textContent = n === 0 ? 'All countries ▾' :
-      n === 1 ? [...activeCountries][0] + ' ▾' : n + ' countries ▾';
+    if (n === 0) { countryTrigger.textContent = 'All countries ▾'; }
+    else if (n === 1) {
+      var c = [...activeCountries][0];
+      var f = FLAGS[c] || '';
+      countryTrigger.textContent = (f ? f + ' ' : '') + c + ' ▾';
+    } else { countryTrigger.textContent = n + ' countries ▾'; }
     countryTrigger.classList.toggle('active', n > 0);
   }
   allGroups.forEach(function(group) {
     var flag = FLAGS[group.label] || '';
-    if (flag) group.labelTr.cells[0].textContent += ' ' + flag;
+    if (flag && !group.labelTr.cells[0].textContent.includes(flag)) {
+      group.labelTr.cells[0].textContent += ' ' + flag;
+    }
     var lbl = document.createElement('label');
     lbl.className = 'country-option';
     var cb = document.createElement('input');

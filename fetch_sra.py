@@ -96,10 +96,20 @@ sorted_countries = sorted(by_country.keys(), key=lambda c: (0 if c == "Sweden" e
 # ── Build HTML ─────────────────────────────────────────────
 now_str = datetime.now().strftime("%d %b %Y %H:%M")
 
+COUNTRY_FLAGS = {
+    "Sweden":"🇸🇪","Finland":"🇫🇮","Estonia":"🇪🇪","Norway":"🇳🇴","Denmark":"🇩🇰",
+    "Latvia":"🇱🇻","Lithuania":"🇱🇹","Poland":"🇵🇱","Germany":"🇩🇪","Netherlands":"🇳🇱",
+    "Belgium":"🇧🇪","France":"🇫🇷","Spain":"🇪🇸","Italy":"🇮🇹","United Kingdom":"🇬🇧",
+    "United States":"🇺🇸","Canada":"🇨🇦","Australia":"🇦🇺","Czech Republic":"🇨🇿",
+    "Austria":"🇦🇹","Switzerland":"🇨🇭","Portugal":"🇵🇹",
+}
+
 rows_html = ""
 for country in sorted_countries:
     country_events = by_country[country]
-    rows_html += f'<tr class="country-row"><td colspan="7">{esc(country)}</td></tr>\n'
+    flag = COUNTRY_FLAGS.get(country, "")
+    country_display = f"{esc(country)} {flag}" if flag else esc(country)
+    rows_html += f'<tr class="country-row" data-c="{esc(country)}"><td colspan="7">{country_display}</td></tr>\n'
     for e in country_events:
         name       = esc(e.get("name", "?"))
         venue_raw  = str(e.get("venue") or "")
@@ -321,7 +331,7 @@ html = f"""<!DOCTYPE html>
     Array.from(tbody.rows).forEach(function(tr) {{
       if (tr.classList.contains('country-row')) {{
         if (currentCountryTr) groups.push({{ label: currentCountry, labelTr: currentCountryTr, rows: rows }});
-        currentCountry = tr.cells[0].textContent.trim();
+        currentCountry = tr.getAttribute('data-c') || tr.cells[0].textContent.trim();
         currentCountryTr = tr;
         rows = [];
       }} else {{
@@ -400,13 +410,19 @@ html = f"""<!DOCTYPE html>
   }};
   function updateTrigger() {{
     var n = activeCountries.size;
-    countryTrigger.textContent = n === 0 ? 'All countries ▾' :
-      n === 1 ? [...activeCountries][0] + ' ▾' : n + ' countries ▾';
+    if (n === 0) {{ countryTrigger.textContent = 'All countries ▾'; }}
+    else if (n === 1) {{
+      var c = [...activeCountries][0];
+      var f = FLAGS[c] || '';
+      countryTrigger.textContent = (f ? f + ' ' : '') + c + ' ▾';
+    }} else {{ countryTrigger.textContent = n + ' countries ▾'; }}
     countryTrigger.classList.toggle('active', n > 0);
   }}
   allGroups.forEach(function(group) {{
     var flag = FLAGS[group.label] || '';
-    if (flag) group.labelTr.cells[0].textContent += ' ' + flag;
+    if (flag && !group.labelTr.cells[0].textContent.includes(flag)) {{
+      group.labelTr.cells[0].textContent += ' ' + flag;
+    }}
     var lbl = document.createElement('label');
     lbl.className = 'country-option';
     var cb = document.createElement('input');
