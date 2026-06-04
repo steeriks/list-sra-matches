@@ -78,12 +78,41 @@
   .ical-icon:hover { opacity: 1; color: var(--accent); }
   small { display: block; margin-top: 4px; }
   .no-results { text-align: center; color: var(--text2); padding: 40px; display: none; }
-  @media (max-width: 700px) { body { padding: 16px; } td, th { padding: 8px; } }
+  @media (max-width: 700px) {
+    body { padding: 12px; }
+    .wrap { overflow-x: unset; }
+    table { display: block; }
+    thead { display: none; }
+    tbody { display: flex; flex-direction: column; gap: 8px; }
+    tr.country-row { display: block; margin-top: 4px; }
+    tr.country-row td { display: block; border-radius: 6px; }
+    tr:not(.country-row) {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto auto;
+      gap: 3px 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    tr.row-open  { border-left: 3px solid var(--green); background: var(--surface); }
+    tr.row-closed { border-left: 3px solid #2d3055; background: var(--surface); }
+    tr.row-open  td:first-child,
+    tr.row-closed td:first-child { border-left: none; }
+    tr:not(.country-row) td { padding: 0; border: none; background: transparent; }
+    td.name         { grid-column: 1; grid-row: 1; }
+    td:nth-child(2) { grid-column: 1; grid-row: 2; font-size: 0.8rem; color: var(--text2); }
+    td:nth-child(3) { grid-column: 1; grid-row: 3; font-size: 0.8rem; }
+    td:nth-child(3) small { display: inline; margin: 0 0 0 6px; }
+    td:nth-child(4), td:nth-child(5), td:nth-child(6) { display: none; }
+    td:nth-child(7) { grid-column: 2; grid-row: 1 / span 3; align-self: center; }
+  }
 </style>
 </head>
 <body>
 <h1>Upcoming SRA Matches</h1>
-<div class="meta">Generated 04 Jun 2026 08:41 &nbsp;·&nbsp; 98 matches found</div>
+<div class="meta">Generated 04 Jun 2026 09:15 &nbsp;·&nbsp; 98 matches found</div>
 <div class="toolbar">
   <div class="search-wrap"><input type="text" id="search" placeholder="Search matches or countries…" autocomplete="off"></div>
   <div class="filter-btns">
@@ -1050,8 +1079,8 @@
   }
   function triggerIcal(summary, dtstart, dtend) {
     var uid = Date.now() + '-' + Math.random().toString(36).slice(2) + '@sra';
-    var esc = summary.replace(/[\\,;]/g, '\\$&');
-    var ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//SRA Matches//EN\r\nBEGIN:VEVENT\r\nUID:' + uid + '\r\nDTSTART;VALUE=DATE:' + dtstart + '\r\nDTEND;VALUE=DATE:' + dtend + '\r\nSUMMARY:' + esc + '\r\nEND:VEVENT\r\nEND:VCALENDAR';
+    var escaped = summary.split(',').join('\\,').split(';').join('\\;');
+    var ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//SRA Matches//EN\r\nBEGIN:VEVENT\r\nUID:' + uid + '\r\nDTSTART;VALUE=DATE:' + dtstart + '\r\nDTEND;VALUE=DATE:' + dtend + '\r\nSUMMARY:' + escaped + '\r\nEND:VEVENT\r\nEND:VCALENDAR';
     var blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
@@ -1065,13 +1094,12 @@
     a.addEventListener('click', function(e){ e.preventDefault(); triggerIcal(summary, dtstart, dtend); });
     return a;
   }
-  // Inject calendar icons into date and registration cells once
   allGroups.forEach(function(group) {
     group.rows.forEach(function(tr) {
       var name = tr.cells[0] ? tr.cells[0].textContent.trim() : 'SRA Match';
       var dc = tr.cells[1], rc = tr.cells[2];
       if (dc && dc.firstChild && dc.firstChild.nodeType === 3) {
-        var txt = dc.firstChild.textContent, parts = txt.split('–');
+        var txt = dc.firstChild.textContent, parts = txt.split('\u2013');
         var s = parseIcalDate(parts[0]);
         if (s) {
           var e2 = parts[1] ? parseIcalDate(parts[1]) : null;
@@ -1080,7 +1108,7 @@
         }
       }
       if (rc && rc.firstChild && rc.firstChild.nodeType === 3) {
-        var rtxt = rc.firstChild.textContent, rparts = rtxt.split('–');
+        var rtxt = rc.firstChild.textContent, rparts = rtxt.split('\u2013');
         var rs = parseIcalDate(rparts[0]);
         if (rs) {
           var re2 = rparts[1] ? parseIcalDate(rparts[1]) : null;

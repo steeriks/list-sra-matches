@@ -213,7 +213,36 @@ html = f"""<!DOCTYPE html>
   .ical-icon:hover {{ opacity: 1; color: var(--accent); }}
   small {{ display: block; margin-top: 4px; }}
   .no-results {{ text-align: center; color: var(--text2); padding: 40px; display: none; }}
-  @media (max-width: 700px) {{ body {{ padding: 16px; }} td, th {{ padding: 8px; }} }}
+  @media (max-width: 700px) {{
+    body {{ padding: 12px; }}
+    .wrap {{ overflow-x: unset; }}
+    table {{ display: block; }}
+    thead {{ display: none; }}
+    tbody {{ display: flex; flex-direction: column; gap: 8px; }}
+    tr.country-row {{ display: block; margin-top: 4px; }}
+    tr.country-row td {{ display: block; border-radius: 6px; }}
+    tr:not(.country-row) {{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto auto;
+      gap: 3px 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }}
+    tr.row-open  {{ border-left: 3px solid var(--green); background: var(--surface); }}
+    tr.row-closed {{ border-left: 3px solid #2d3055; background: var(--surface); }}
+    tr.row-open  td:first-child,
+    tr.row-closed td:first-child {{ border-left: none; }}
+    tr:not(.country-row) td {{ padding: 0; border: none; background: transparent; }}
+    td.name         {{ grid-column: 1; grid-row: 1; }}
+    td:nth-child(2) {{ grid-column: 1; grid-row: 2; font-size: 0.8rem; color: var(--text2); }}
+    td:nth-child(3) {{ grid-column: 1; grid-row: 3; font-size: 0.8rem; }}
+    td:nth-child(3) small {{ display: inline; margin: 0 0 0 6px; }}
+    td:nth-child(4), td:nth-child(5), td:nth-child(6) {{ display: none; }}
+    td:nth-child(7) {{ grid-column: 2; grid-row: 1 / span 3; align-self: center; }}
+  }}
 </style>
 </head>
 <body>
