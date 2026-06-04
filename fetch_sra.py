@@ -96,19 +96,19 @@ sorted_countries = sorted(by_country.keys(), key=lambda c: (0 if c == "Sweden" e
 # ── Build HTML ─────────────────────────────────────────────
 now_str = datetime.now().strftime("%d %b %Y %H:%M")
 
-COUNTRY_FLAGS = {
-    "Sweden":"🇸🇪","Finland":"🇫🇮","Estonia":"🇪🇪","Norway":"🇳🇴","Denmark":"🇩🇰",
-    "Latvia":"🇱🇻","Lithuania":"🇱🇹","Poland":"🇵🇱","Germany":"🇩🇪","Netherlands":"🇳🇱",
-    "Belgium":"🇧🇪","France":"🇫🇷","Spain":"🇪🇸","Italy":"🇮🇹","United Kingdom":"🇬🇧",
-    "United States":"🇺🇸","Canada":"🇨🇦","Australia":"🇦🇺","Czech Republic":"🇨🇿",
-    "Austria":"🇦🇹","Switzerland":"🇨🇭","Portugal":"🇵🇹",
+COUNTRY_CODES = {
+    "Sweden":"se","Finland":"fi","Estonia":"ee","Norway":"no","Denmark":"dk",
+    "Latvia":"lv","Lithuania":"lt","Poland":"pl","Germany":"de","Netherlands":"nl",
+    "Belgium":"be","France":"fr","Spain":"es","Italy":"it","United Kingdom":"gb",
+    "United States":"us","Canada":"ca","Australia":"au","Czech Republic":"cz",
+    "Austria":"at","Switzerland":"ch","Portugal":"pt",
 }
 
 rows_html = ""
 for country in sorted_countries:
     country_events = by_country[country]
-    flag = COUNTRY_FLAGS.get(country, "")
-    country_display = f'{esc(country)} <span class="flag">{flag}</span>' if flag else esc(country)
+    code = COUNTRY_CODES.get(country, "")
+    country_display = f'{esc(country)} <img class="flag" src="https://flagcdn.com/20x15/{code}.png" alt="" loading="lazy">' if code else esc(country)
     rows_html += f'<tr class="country-row" data-c="{esc(country)}"><td colspan="7">{country_display}</td></tr>\n'
     for e in country_events:
         name       = esc(e.get("name", "?"))
@@ -240,7 +240,7 @@ html = f"""<!DOCTYPE html>
   .ical-icon:hover {{ opacity: 1; color: var(--accent); }}
   .new-badge {{ background: var(--accent); color: #fff; font-size: 0.65rem; font-weight: 700;
     padding: 1px 5px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.03em; }}
-  .flag {{ letter-spacing: 0; }}
+  img.flag {{ width: 20px; height: 15px; vertical-align: middle; margin-left: 5px; border-radius: 2px; }}
   small {{ display: block; margin-top: 4px; }}
   .no-results {{ text-align: center; color: var(--text2); padding: 40px; display: none; }}
   @media (max-width: 700px) {{
@@ -411,28 +411,36 @@ html = f"""<!DOCTYPE html>
   }});
 
   // Flags + multi-select country dropdown
-  var FLAGS = {{
-    'Sweden':'🇸🇪','Finland':'🇫🇮','Estonia':'🇪🇪','Norway':'🇳🇴','Denmark':'🇩🇰',
-    'Latvia':'🇱🇻','Lithuania':'🇱🇹','Poland':'🇵🇱','Germany':'🇩🇪','Netherlands':'🇳🇱',
-    'Belgium':'🇧🇪','France':'🇫🇷','Spain':'🇪🇸','Italy':'🇮🇹','United Kingdom':'🇬🇧',
-    'United States':'🇺🇸','Canada':'🇨🇦','Australia':'🇦🇺','Czech Republic':'🇨🇿',
-    'Austria':'🇦🇹','Switzerland':'🇨🇭','Portugal':'🇵🇹'
+  var CODES = {{
+    'Sweden':'se','Finland':'fi','Estonia':'ee','Norway':'no','Denmark':'dk',
+    'Latvia':'lv','Lithuania':'lt','Poland':'pl','Germany':'de','Netherlands':'nl',
+    'Belgium':'be','France':'fr','Spain':'es','Italy':'it','United Kingdom':'gb',
+    'United States':'us','Canada':'ca','Australia':'au','Czech Republic':'cz',
+    'Austria':'at','Switzerland':'ch','Portugal':'pt'
   }};
+  function makeFlag(country) {{
+    var code = CODES[country]; if (!code) return null;
+    var img = document.createElement('img');
+    img.className = 'flag'; img.src = 'https://flagcdn.com/20x15/' + code + '.png';
+    img.alt = ''; img.loading = 'lazy'; return img;
+  }}
   function updateTrigger() {{
     var n = activeCountries.size;
-    if (n === 0) {{ countryTrigger.textContent = 'All countries ▾'; }}
-    else if (n === 1) {{
+    while (countryTrigger.firstChild) countryTrigger.removeChild(countryTrigger.firstChild);
+    if (n === 0) {{
+      countryTrigger.textContent = 'All countries ▾';
+    }} else if (n === 1) {{
       var c = [...activeCountries][0];
-      var f = FLAGS[c] || '';
-      countryTrigger.textContent = (f ? f + ' ' : '') + c + ' ▾';
+      var fi = makeFlag(c);
+      if (fi) {{ fi.style.marginRight = '5px'; countryTrigger.appendChild(fi); }}
+      countryTrigger.appendChild(document.createTextNode(c + ' ▾'));
     }} else {{ countryTrigger.textContent = n + ' countries ▾'; }}
     countryTrigger.classList.toggle('active', n > 0);
   }}
   allGroups.forEach(function(group) {{
-    var flag = FLAGS[group.label] || '';
-    if (flag && !group.labelTr.cells[0].querySelector('.flag')) {{
-      var fs = document.createElement('span'); fs.className = 'flag'; fs.textContent = ' ' + flag;
-      group.labelTr.cells[0].appendChild(fs);
+    if (!group.labelTr.cells[0].querySelector('img.flag')) {{
+      var hfi = makeFlag(group.label);
+      if (hfi) group.labelTr.cells[0].appendChild(hfi);
     }}
     var lbl = document.createElement('label');
     lbl.className = 'country-option';
@@ -445,7 +453,9 @@ html = f"""<!DOCTYPE html>
       updateTrigger(); render();
     }});
     lbl.appendChild(cb);
-    lbl.appendChild(document.createTextNode(' ' + (flag ? flag + ' ' : '') + group.label));
+    var ofi = makeFlag(group.label);
+    if (ofi) {{ ofi.style.margin = '0 5px 0 4px'; lbl.appendChild(ofi); }}
+    lbl.appendChild(document.createTextNode(group.label));
     countryPanel.appendChild(lbl);
   }});
   countryTrigger.addEventListener('click', function(e) {{
