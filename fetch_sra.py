@@ -75,6 +75,21 @@ except Exception as e:
 events = data.get("events", [])
 print(f"Found {len(events)} matches.")
 
+# ── Diagnostic: check event 28361 under a broader query ───────────────────
+print("Diagnostic: querying all rules for Oct 2026 to find event 28361...")
+try:
+    diag = gql(f"""{{
+  events(starts_after: "2026-09-30", starts_before: "2026-10-06") {{
+    id get_content_type_key name starts get_state_display get_full_absolute_url
+  }}
+}}""", token)
+    for e in (diag.get("events") or []):
+        flag = " <<<< EVENT 28361" if str(e.get("id")) == "28361" else ""
+        print(f"  id={e['id']} type={e.get('get_content_type_key')} state={e.get('get_state_display')} name={e.get('name','?')[:40]}{flag}")
+except Exception as e:
+    print(f"  Diagnostic query failed: {e}")
+# ──────────────────────────────────────────────────────────────────────────
+
 def fmt(s):
     if not s: return "TBD"
     try: return datetime.fromisoformat(s[:10]).strftime("%d %b %Y")
