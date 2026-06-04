@@ -121,7 +121,7 @@ for country in sorted_countries:
 
         reg_badge  = '<span class="reg-open">● Open</span>' if reg_now else '<span class="reg-closed">● Closed</span>'
         row_class  = "row-open" if reg_now else "row-closed"
-        match_link = f'<a href="{esc(event_url)}" target="_blank" class="reg-btn">View →</a>' if event_url else ""
+        match_link = f'<a href="{esc(event_url)}" target="_blank" class="reg-btn">SSI</a>' if event_url else ""
 
         rows_html += f"""<tr class="{row_class}">
   <td class="name">{name}</td>
