@@ -55,8 +55,8 @@ print("Logged in.")
 today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 print("Fetching upcoming SRA matches...")
 try:
-    data = gql("""{
-  events(rule: "sr") {
+    data = gql(f"""{{
+  events(rule: "sr", starts_after: "{today}") {{
     id get_content_type_key
     name starts ends
     get_state_display get_region_display
@@ -65,17 +65,15 @@ try:
     registration_starts registration_closes
     is_registration_possible
     get_registration_display
-    organizer { id name }
+    organizer {{ id name }}
     get_full_absolute_url
-  }
-}""", token)
+  }}
+}}""", token)
 except Exception as e:
     print(f"ERROR: {e}"); _pause(); sys.exit(1)
 
-# Keep only events that haven't ended yet (or have no end date)
-all_events = data.get("events", [])
-events = [e for e in all_events if not e.get("ends") or e["ends"][:10] >= today]
-print(f"Found {len(events)} upcoming matches (of {len(all_events)} total).")
+events = data.get("events", [])
+print(f"Found {len(events)} matches.")
 
 def fmt(s):
     if not s: return "TBD"
