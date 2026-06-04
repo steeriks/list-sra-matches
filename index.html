@@ -33,11 +33,27 @@
   }
   .filter-btns button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
   .filter-btns button:hover:not(.active) { border-color: var(--text2); color: var(--text); }
-  .country-select {
+  .country-dropdown { position: relative; }
+  .country-trigger {
     background: var(--surface2); border: 1px solid var(--border); color: var(--text);
     padding: 7px 12px; border-radius: 8px; font-size: 0.82rem; outline: none; cursor: pointer;
+    white-space: nowrap;
   }
-  .country-select:focus { border-color: var(--accent); }
+  .country-trigger.active { border-color: var(--accent); color: var(--accent); }
+  .country-panel {
+    display: none; position: absolute; top: calc(100% + 4px); left: 0; z-index: 100;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    min-width: 180px; padding: 4px 0; max-height: 280px; overflow-y: auto;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .country-panel.open { display: block; }
+  .country-option {
+    display: flex; align-items: center; gap: 8px; padding: 7px 14px;
+    cursor: pointer; font-size: 0.85rem; color: var(--text); user-select: none;
+  }
+  .country-option:hover { background: var(--surface); }
+  .country-option input[type=checkbox] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
+  .country-option.checked { color: var(--accent); }
   .count { color: var(--text2); font-size: 0.82rem; margin-left: auto; }
   .wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
@@ -119,7 +135,10 @@
     <button class="active" data-filter="all">All</button>
     <button data-filter="open">Reg. Open</button>
   </div>
-  <select id="country-select" class="country-select"><option value="">All countries</option></select>
+  <div class="country-dropdown" id="country-dropdown">
+    <button class="country-trigger" id="country-trigger">All countries ▾</button>
+    <div class="country-panel" id="country-panel"></div>
+  </div>
   <span class="count" id="count"></span>
 </div>
 <div class="wrap">
@@ -1035,11 +1054,12 @@
   var noRes         = document.getElementById('no-results');
   var filterBtns    = document.querySelectorAll('[data-filter]');
   var headers       = document.querySelectorAll('th[data-col]');
-  var countrySelect = document.getElementById('country-select');
+  var countryTrigger = document.getElementById('country-trigger');
+  var countryPanel   = document.getElementById('country-panel');
 
   var sortCol = -1, sortAsc = true;
-  var activeFilter  = 'all';
-  var activeCountry = '';
+  var activeFilter    = 'all';
+  var activeCountries = new Set();
 
   // Build flat data rows from the rendered HTML so sorting works
   // Each entry: { tr, country, sortKeys }
@@ -1121,13 +1141,42 @@
     });
   });
 
-  // Populate country dropdown
+  // Flags + multi-select country dropdown
+  var FLAGS = {
+    'Sweden':'🇸🇪','Finland':'🇫🇮','Estonia':'🇪🇪','Norway':'🇳🇴','Denmark':'🇩🇰',
+    'Latvia':'🇱🇻','Lithuania':'🇱🇹','Poland':'🇵🇱','Germany':'🇩🇪','Netherlands':'🇳🇱',
+    'Belgium':'🇧🇪','France':'🇫🇷','Spain':'🇪🇸','Italy':'🇮🇹','United Kingdom':'🇬🇧',
+    'United States':'🇺🇸','Canada':'🇨🇦','Australia':'🇦🇺','Czech Republic':'🇨🇿',
+    'Austria':'🇦🇹','Switzerland':'🇨🇭','Portugal':'🇵🇹'
+  };
+  function updateTrigger() {
+    var n = activeCountries.size;
+    countryTrigger.textContent = n === 0 ? 'All countries ▾' :
+      n === 1 ? [...activeCountries][0] + ' ▾' : n + ' countries ▾';
+    countryTrigger.classList.toggle('active', n > 0);
+  }
   allGroups.forEach(function(group) {
-    var opt = document.createElement('option');
-    opt.value = group.label;
-    opt.textContent = group.label;
-    countrySelect.appendChild(opt);
+    var flag = FLAGS[group.label] || '';
+    if (flag) group.labelTr.cells[0].textContent += ' ' + flag;
+    var lbl = document.createElement('label');
+    lbl.className = 'country-option';
+    var cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.value = group.label;
+    cb.addEventListener('change', function() {
+      if (cb.checked) activeCountries.add(group.label);
+      else activeCountries.delete(group.label);
+      lbl.classList.toggle('checked', cb.checked);
+      updateTrigger(); render();
+    });
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode(' ' + (flag ? flag + ' ' : '') + group.label));
+    countryPanel.appendChild(lbl);
   });
+  countryTrigger.addEventListener('click', function(e) {
+    e.stopPropagation(); countryPanel.classList.toggle('open');
+  });
+  document.addEventListener('click', function() { countryPanel.classList.remove('open'); });
+  countryPanel.addEventListener('click', function(e) { e.stopPropagation(); });
 
   function cellText(tr, col) {
     if (!tr.cells[col]) return '';
@@ -1154,7 +1203,7 @@
     var shown = 0;
 
     allGroups.forEach(function(group) {
-      if (activeCountry && group.label !== activeCountry) return;
+      if (activeCountries.size > 0 && !activeCountries.has(group.label)) return;
       // filter rows
       var visible = group.rows.filter(function(tr) {
         if (activeFilter === 'open' && !tr.classList.contains('row-open')) return false;
@@ -1183,10 +1232,6 @@
 
   search.addEventListener('input', render);
 
-  countrySelect.addEventListener('change', function() {
-    activeCountry = countrySelect.value;
-    render();
-  });
 
   filterBtns.forEach(function(btn) {
     btn.addEventListener('click', function() {
