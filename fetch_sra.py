@@ -57,7 +57,7 @@ today = datetime.now(ZoneInfo("Europe/Stockholm")).strftime("%Y-%m-%d")
 print("Fetching upcoming SRA matches...")
 try:
     data = gql(f"""{{
-  events(rule: "sr", starts_after: "{today}", first: 500) {{
+  events(rule: "sr", starts_after: "{today}", limit: 500) {{
     id get_content_type_key
     name starts ends
     get_state_display get_region_display
