@@ -94,6 +94,7 @@
   .ical-icon:hover { opacity: 1; color: var(--accent); }
   .new-badge { background: var(--accent); color: #fff; font-size: 0.65rem; font-weight: 700;
     padding: 1px 5px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.03em; }
+  .flag { letter-spacing: 0; }
   small { display: block; margin-top: 4px; }
   .no-results { text-align: center; color: var(--text2); padding: 40px; display: none; }
   @media (max-width: 700px) {
@@ -157,7 +158,7 @@
   </tr>
 </thead>
 <tbody id="tbody">
-<tr class="country-row" data-c="Sweden"><td colspan="7">Sweden 🇸🇪</td></tr>
+<tr class="country-row" data-c="Sweden"><td colspan="7">Sweden <span class="flag">🇸🇪</span></td></tr>
 <tr class="row-open">
   <td class="name">SCVM 2026 SRA-Match 3 LGSKF</td>
   <td>07 Jun 2026 – TBD</td>
@@ -194,7 +195,7 @@
   <td>0</td>
   <td><a href="https://shootnscoreit.com/event/22/27048/" target="_blank" class="reg-btn">SSI</a></td>
 </tr>
-<tr class="country-row" data-c="Estonia"><td colspan="7">Estonia 🇪🇪</td></tr>
+<tr class="country-row" data-c="Estonia"><td colspan="7">Estonia <span class="flag">🇪🇪</span></td></tr>
 <tr class="row-open">
   <td class="name">Punkrisoojus</td>
   <td>04 Jun 2026 – TBD</td>
@@ -240,7 +241,7 @@
   <td>0</td>
   <td><a href="https://shootnscoreit.com/event/22/27136/" target="_blank" class="reg-btn">SSI</a></td>
 </tr>
-<tr class="country-row" data-c="Finland"><td colspan="7">Finland 🇫🇮</td></tr>
+<tr class="country-row" data-c="Finland"><td colspan="7">Finland <span class="flag">🇫🇮</span></td></tr>
 <tr class="row-open">
   <td class="name">Test</td>
   <td>04 Jun 2026 – TBD</td>
@@ -1033,7 +1034,7 @@
   <td>0</td>
   <td><a href="https://shootnscoreit.com/event/22/26525/" target="_blank" class="reg-btn">SSI</a></td>
 </tr>
-<tr class="country-row" data-c="United States"><td colspan="7">United States 🇺🇸</td></tr>
+<tr class="country-row" data-c="United States"><td colspan="7">United States <span class="flag">🇺🇸</span></td></tr>
 <tr class="row-closed">
   <td class="name">Kurikka SRA 2026 Kesäkuu P+TA</td>
   <td>27 Jun 2026 – TBD</td>
@@ -1169,8 +1170,9 @@
   }
   allGroups.forEach(function(group) {
     var flag = FLAGS[group.label] || '';
-    if (flag && !group.labelTr.cells[0].textContent.includes(flag)) {
-      group.labelTr.cells[0].textContent += ' ' + flag;
+    if (flag && !group.labelTr.cells[0].querySelector('.flag')) {
+      var fs = document.createElement('span'); fs.className = 'flag'; fs.textContent = ' ' + flag;
+      group.labelTr.cells[0].appendChild(fs);
     }
     var lbl = document.createElement('label');
     lbl.className = 'country-option';

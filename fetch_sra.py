@@ -108,7 +108,7 @@ rows_html = ""
 for country in sorted_countries:
     country_events = by_country[country]
     flag = COUNTRY_FLAGS.get(country, "")
-    country_display = f"{esc(country)} {flag}" if flag else esc(country)
+    country_display = f'{esc(country)} <span class="flag">{flag}</span>' if flag else esc(country)
     rows_html += f'<tr class="country-row" data-c="{esc(country)}"><td colspan="7">{country_display}</td></tr>\n'
     for e in country_events:
         name       = esc(e.get("name", "?"))
@@ -240,6 +240,7 @@ html = f"""<!DOCTYPE html>
   .ical-icon:hover {{ opacity: 1; color: var(--accent); }}
   .new-badge {{ background: var(--accent); color: #fff; font-size: 0.65rem; font-weight: 700;
     padding: 1px 5px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.03em; }}
+  .flag {{ letter-spacing: 0; }}
   small {{ display: block; margin-top: 4px; }}
   .no-results {{ text-align: center; color: var(--text2); padding: 40px; display: none; }}
   @media (max-width: 700px) {{
@@ -429,8 +430,9 @@ html = f"""<!DOCTYPE html>
   }}
   allGroups.forEach(function(group) {{
     var flag = FLAGS[group.label] || '';
-    if (flag && !group.labelTr.cells[0].textContent.includes(flag)) {{
-      group.labelTr.cells[0].textContent += ' ' + flag;
+    if (flag && !group.labelTr.cells[0].querySelector('.flag')) {{
+      var fs = document.createElement('span'); fs.className = 'flag'; fs.textContent = ' ' + flag;
+      group.labelTr.cells[0].appendChild(fs);
     }}
     var lbl = document.createElement('label');
     lbl.className = 'country-option';
