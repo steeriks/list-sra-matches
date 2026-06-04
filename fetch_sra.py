@@ -51,16 +51,14 @@ if not res["success"]:
 token = res["token"]["token"]
 print("Logged in.")
 
-# ── Fetch ─────────────────────────────────────────────────
+# ── Fetch (two staggered windows to bypass ~4-month API cap) ──────────────
 from zoneinfo import ZoneInfo
-today = datetime.now(ZoneInfo("Europe/Stockholm")).strftime("%Y-%m-%d")
-print("Fetching upcoming SRA matches...")
-try:
-    from datetime import timedelta
-    far_future = (datetime.now(ZoneInfo("Europe/Stockholm")) + timedelta(days=730)).strftime("%Y-%m-%d")
-    data = gql(f"""{{
-  events(rule: "sr", starts_after: "{today}", starts_before: "{far_future}") {{
-    id get_content_type_key
+from datetime import timedelta
+now_local = datetime.now(ZoneInfo("Europe/Stockholm"))
+today     = now_local.strftime("%Y-%m-%d")
+overlap   = (now_local + timedelta(days=90)).strftime("%Y-%m-%d")
+
+FIELDS = """id get_content_type_key
     name starts ends
     get_state_display get_region_display
     venue competitors_count
@@ -68,15 +66,21 @@ try:
     registration_starts registration_closes
     is_registration_possible
     get_registration_display
-    organizer {{ id name }}
-    get_full_absolute_url
-  }}
-}}""", token)
+    organizer { id name }
+    get_full_absolute_url"""
+
+print("Fetching upcoming SRA matches...")
+try:
+    d1 = gql(f'{{ events(rule: "sr", starts_after: "{today}") {{ {FIELDS} }} }}', token)
+    d2 = gql(f'{{ events(rule: "sr", starts_after: "{overlap}") {{ {FIELDS} }} }}', token)
 except Exception as e:
     print(f"ERROR: {e}"); _pause(); sys.exit(1)
 
-events = data.get("events", [])
-print(f"Found {len(events)} matches.")
+seen, events = set(), []
+for e in (d1.get("events", []) + d2.get("events", [])):
+    if e["id"] not in seen:
+        seen.add(e["id"]); events.append(e)
+print(f"Found {len(events)} matches (window 1: {len(d1.get('events',[]))}, window 2: {len(d2.get('events',[]))} raw).")
 
 def fmt(s):
     if not s: return "TBD"
