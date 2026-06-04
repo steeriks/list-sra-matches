@@ -101,7 +101,7 @@ for country in by_country:
 sorted_countries = sorted(by_country.keys(), key=lambda c: (0 if c == "Sweden" else 1, c))
 
 # ── Build HTML ─────────────────────────────────────────────
-now_str = datetime.now().strftime("%d %b %Y %H:%M")
+now_str = datetime.now(ZoneInfo("Europe/Stockholm")).strftime("%d %b %Y %H:%M")
 
 COUNTRY_CODES = {
     "Sweden":"se","Finland":"fi","Estonia":"ee","Norway":"no","Denmark":"dk",
