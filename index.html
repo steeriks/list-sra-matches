@@ -1388,11 +1388,6 @@
   var activeFilter    = 'all';
   var activeCountries = new Set();
   var NEW_TTL = 86400000;
-  var newSectionHdr = (function() {
-    var tr = document.createElement('tr'); tr.className = 'country-row';
-    var td = document.createElement('td'); td.setAttribute('colspan', '7');
-    td.textContent = '🆕 New this update'; tr.appendChild(td); return tr;
-  })();
 
   // Build flat data rows from the rendered HTML so sorting works
   // Each entry: { tr, country, sortKeys }
@@ -1549,7 +1544,8 @@
 
   function render() {
     var q = search.value.toLowerCase().trim();
-    var newRows = [], mainItems = [], shown = 0;
+    var frag = document.createDocumentFragment();
+    var shown = 0;
 
     allGroups.forEach(function(group) {
       if (activeCountries.size > 0 && !activeCountries.has(group.label)) return;
@@ -1561,21 +1557,9 @@
       });
       if (visible.length === 0) return;
       var sorted = applySort(visible);
-      if (sortCol < 0) mainItems.push({ hdr: true, el: group.labelTr });
-      sorted.forEach(function(tr) {
-        var isNew = tr.classList.contains('row-new') && sortCol < 0;
-        if (isNew) newRows.push(tr);
-        mainItems.push({ hdr: false, el: tr, isNew: isNew });
-        shown++;
-      });
+      if (sortCol < 0) frag.appendChild(group.labelTr);
+      sorted.forEach(function(tr) { frag.appendChild(tr); shown++; });
     });
-
-    var frag = document.createDocumentFragment();
-    if (newRows.length > 0) {
-      frag.appendChild(newSectionHdr);
-      newRows.forEach(function(tr) { frag.appendChild(tr); });
-    }
-    mainItems.forEach(function(item) { if (!item.isNew) frag.appendChild(item.el); });
 
     tbody.innerHTML = '';
     tbody.appendChild(frag);
