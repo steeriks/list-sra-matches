@@ -102,7 +102,13 @@ for country in sorted_countries:
     rows_html += f'<tr class="country-row"><td colspan="7">{esc(country)}</td></tr>\n'
     for e in country_events:
         name       = esc(e.get("name", "?"))
-        venue      = esc(e.get("venue") or "—")
+        venue_raw  = str(e.get("venue") or "")
+        if venue_raw.startswith("http"):
+            venue = f'<a href="{esc(venue_raw)}" target="_blank" class="map-link">Map →</a>'
+        elif venue_raw:
+            venue = esc(venue_raw)
+        else:
+            venue = "—"
         date       = f"{fmt(e.get('starts'))} – {fmt(e.get('ends'))}"
         org        = esc((e.get("organizer") or {}).get("name") or "—")
         status     = esc(e.get("get_state_display") or "—")
@@ -141,7 +147,7 @@ html = f"""<!DOCTYPE html>
   }}
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-          background: var(--bg); color: var(--text); padding: 32px 24px; }}
+          background: var(--bg); color: var(--text); padding: 32px 24px; line-height: 1.5; }}
   h1 {{ font-size: 1.6rem; margin-bottom: 4px; }}
   .meta {{ color: var(--text2); font-size: 0.85rem; margin-bottom: 16px; }}
   .toolbar {{ display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }}
@@ -169,12 +175,13 @@ html = f"""<!DOCTYPE html>
   .country-select:focus {{ border-color: var(--accent); }}
   .count {{ color: var(--text2); font-size: 0.82rem; margin-left: auto; }}
   .wrap {{ overflow-x: auto; }}
-  table {{ width: 100%; border-collapse: collapse; font-size: 0.88rem; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 0.92rem; }}
   th {{
     text-align: left; padding: 10px 14px; color: var(--text2); font-weight: 600;
     font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
     border-bottom: 2px solid var(--border); white-space: nowrap;
     cursor: pointer; user-select: none;
+    position: sticky; top: 0; background: var(--bg); z-index: 10;
   }}
   th:last-child {{ cursor: default; }}
   th.sort-asc::after  {{ content: " ▲"; color: var(--accent); }}
@@ -198,6 +205,12 @@ html = f"""<!DOCTYPE html>
     padding: 5px 12px; border-radius: 6px; white-space: nowrap;
   }}
   .reg-btn:hover {{ opacity: 0.85; }}
+  tr.row-closed {{ opacity: 0.6; }}
+  tr.row-closed:hover {{ opacity: 1; }}
+  .map-link {{ color: var(--text2); font-size: 0.82rem; white-space: nowrap; }}
+  .ical-icon {{ color: var(--text2); text-decoration: none; margin-right: 5px; font-size: 0.82em;
+    opacity: 0.55; cursor: pointer; display: inline-block; vertical-align: middle; }}
+  .ical-icon:hover {{ opacity: 1; color: var(--accent); }}
   small {{ display: block; margin-top: 4px; }}
   .no-results {{ text-align: center; color: var(--text2); padding: 40px; display: none; }}
   @media (max-width: 700px) {{ body {{ padding: 16px; }} td, th {{ padding: 8px; }} }}
@@ -272,6 +285,62 @@ html = f"""<!DOCTYPE html>
 
   var allGroups = getGroups();
 
+  // iCal helpers
+  var ICAL_MONTHS = {{Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12}};
+  function parseIcalDate(str) {{
+    var m = str.trim().match(/^(\\d{{1,2}})\\s+([A-Za-z]+)\\s+(\\d{{4}})$/);
+    if (!m || !ICAL_MONTHS[m[2]]) return null;
+    return m[3] + String(ICAL_MONTHS[m[2]]).padStart(2,'0') + String(m[1]).padStart(2,'0');
+  }}
+  function icalNextDay(d) {{
+    var dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
+    dt.setDate(dt.getDate()+1);
+    return String(dt.getFullYear()) + String(dt.getMonth()+1).padStart(2,'0') + String(dt.getDate()).padStart(2,'0');
+  }}
+  function triggerIcal(summary, dtstart, dtend) {{
+    var uid = Date.now() + '-' + Math.random().toString(36).slice(2) + '@sra';
+    var escaped = summary.split(',').join('\\\\,').split(';').join('\\\\;');
+    var ics = 'BEGIN:VCALENDAR\\r\\nVERSION:2.0\\r\\nPRODID:-//SRA Matches//EN\\r\\nBEGIN:VEVENT\\r\\nUID:' + uid + '\\r\\nDTSTART;VALUE=DATE:' + dtstart + '\\r\\nDTEND;VALUE=DATE:' + dtend + '\\r\\nSUMMARY:' + escaped + '\\r\\nEND:VEVENT\\r\\nEND:VCALENDAR';
+    var blob = new Blob([ics], {{type:'text/calendar;charset=utf-8'}});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'event.ics';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){{URL.revokeObjectURL(url);}}, 1000);
+  }}
+  function makeIcalIcon(summary, dtstart, dtend) {{
+    var a = document.createElement('a');
+    a.href = '#'; a.className = 'ical-icon'; a.title = 'Add to calendar'; a.textContent = '📅';
+    a.addEventListener('click', function(e){{ e.preventDefault(); triggerIcal(summary, dtstart, dtend); }});
+    return a;
+  }}
+  allGroups.forEach(function(group) {{
+    group.rows.forEach(function(tr) {{
+      var name = tr.cells[0] ? tr.cells[0].textContent.trim() : 'SRA Match';
+      var dc = tr.cells[1], rc = tr.cells[2];
+      if (dc && dc.firstChild && dc.firstChild.nodeType === 3) {{
+        var txt = dc.firstChild.textContent, parts = txt.split('\\u2013');
+        var s = parseIcalDate(parts[0]);
+        if (s) {{
+          var e2 = parts[1] ? parseIcalDate(parts[1]) : null;
+          dc.setAttribute('data-v', txt);
+          dc.insertBefore(makeIcalIcon(name, s, e2 ? icalNextDay(e2) : icalNextDay(s)), dc.firstChild);
+        }}
+      }}
+      if (rc && rc.firstChild && rc.firstChild.nodeType === 3) {{
+        var rtxt = rc.firstChild.textContent, rparts = rtxt.split('\\u2013');
+        var rs = parseIcalDate(rparts[0]);
+        if (rs) {{
+          var re2 = rparts[1] ? parseIcalDate(rparts[1]) : null;
+          var rdate = re2 || rs;
+          var rsummary = re2 ? 'Reg deadline: ' + name : 'Reg opens: ' + name;
+          rc.setAttribute('data-v', rtxt);
+          rc.insertBefore(makeIcalIcon(rsummary, rdate, icalNextDay(rdate)), rc.firstChild);
+        }}
+      }}
+    }});
+  }});
+
   // Populate country dropdown
   allGroups.forEach(function(group) {{
     var opt = document.createElement('option');
@@ -281,7 +350,9 @@ html = f"""<!DOCTYPE html>
   }});
 
   function cellText(tr, col) {{
-    return tr.cells[col] ? tr.cells[col].textContent.trim() : '';
+    if (!tr.cells[col]) return '';
+    var dv = tr.cells[col].getAttribute('data-v');
+    return dv !== null ? dv.trim() : tr.cells[col].textContent.trim();
   }}
 
   function applySort(rows) {{
