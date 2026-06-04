@@ -52,11 +52,12 @@ token = res["token"]["token"]
 print("Logged in.")
 
 # ── Fetch ─────────────────────────────────────────────────
-today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+from zoneinfo import ZoneInfo
+today = datetime.now(ZoneInfo("Europe/Stockholm")).strftime("%Y-%m-%d")
 print("Fetching upcoming SRA matches...")
 try:
     data = gql(f"""{{
-  events(rule: "sr", starts_after: "{today}") {{
+  events(rule: "sr", starts_after: "{today}", first: 500) {{
     id get_content_type_key
     name starts ends
     get_state_display get_region_display
@@ -74,20 +75,6 @@ except Exception as e:
 
 events = data.get("events", [])
 print(f"Found {len(events)} matches.")
-
-# ── Diagnostic: find rule code of event 28361 ─────────────────────────────
-print("Diagnostic: probing rule codes that return event 28361...")
-for probe_rule in ["sr", "sra", "srr", "sr-r", "sr_r", "sr_regional", "sr-regional", "srregional"]:
-    try:
-        r = gql(f'{{ events(rule: "{probe_rule}", starts_after: "2026-09-30", starts_before: "2026-10-06") {{ id name }} }}', token)
-        ids = [str(e["id"]) for e in (r.get("events") or [])]
-        hit = "28361" in ids
-        print(f'  rule="{probe_rule}" → {len(ids)} events, contains 28361: {hit}')
-        if hit:
-            print(f'    *** Found with rule="{probe_rule}" ***')
-    except Exception as ex:
-        print(f'  rule="{probe_rule}" → error: {ex}')
-# ──────────────────────────────────────────────────────────────────────────
 
 def fmt(s):
     if not s: return "TBD"
