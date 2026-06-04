@@ -208,8 +208,8 @@ html = f"""<!DOCTYPE html>
   tr.row-closed {{ opacity: 0.6; }}
   tr.row-closed:hover {{ opacity: 1; }}
   .map-link {{ color: var(--text2); font-size: 0.82rem; white-space: nowrap; }}
-  .ical-icon {{ color: var(--text2); text-decoration: none; margin-right: 5px; font-size: 0.82em;
-    opacity: 0.55; cursor: pointer; display: inline-block; vertical-align: middle; }}
+  .ical-icon {{ color: var(--text2); text-decoration: none; margin-right: 6px; font-size: 0.78em;
+    opacity: 0.55; cursor: pointer; display: inline-block; vertical-align: middle; white-space: nowrap; }}
   .ical-icon:hover {{ opacity: 1; color: var(--accent); }}
   small {{ display: block; margin-top: 4px; }}
   .no-results {{ text-align: center; color: var(--text2); padding: 40px; display: none; }}
@@ -337,9 +337,9 @@ html = f"""<!DOCTYPE html>
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function(){{URL.revokeObjectURL(url);}}, 1000);
   }}
-  function makeIcalIcon(summary, dtstart, dtend) {{
+  function makeIcalIcon(label, summary, dtstart, dtend) {{
     var a = document.createElement('a');
-    a.href = '#'; a.className = 'ical-icon'; a.title = 'Add to calendar'; a.textContent = '📅';
+    a.href = '#'; a.className = 'ical-icon'; a.title = 'Add to calendar'; a.textContent = '📅 ' + label;
     a.addEventListener('click', function(e){{ e.preventDefault(); triggerIcal(summary, dtstart, dtend); }});
     return a;
   }}
@@ -353,7 +353,7 @@ html = f"""<!DOCTYPE html>
         if (s) {{
           var e2 = parts[1] ? parseIcalDate(parts[1]) : null;
           dc.setAttribute('data-v', txt);
-          dc.insertBefore(makeIcalIcon(name, s, e2 ? icalNextDay(e2) : icalNextDay(s)), dc.firstChild);
+          dc.insertBefore(makeIcalIcon('Match date', name, s, e2 ? icalNextDay(e2) : icalNextDay(s)), dc.firstChild);
         }}
       }}
       if (rc && rc.firstChild && rc.firstChild.nodeType === 3) {{
@@ -364,7 +364,7 @@ html = f"""<!DOCTYPE html>
           var rdate = re2 || rs;
           var rsummary = re2 ? 'Reg deadline: ' + name : 'Reg opens: ' + name;
           rc.setAttribute('data-v', rtxt);
-          rc.insertBefore(makeIcalIcon(rsummary, rdate, icalNextDay(rdate)), rc.firstChild);
+          rc.insertBefore(makeIcalIcon('Reg date', rsummary, rdate, icalNextDay(rdate)), rc.firstChild);
         }}
       }}
     }});
