@@ -158,56 +158,47 @@ html = f"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Upcoming SRA Matches</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='13' fill='none' stroke='%23c8a84b' stroke-width='2'/><circle cx='16' cy='16' r='4' fill='%23c8a84b'/><line x1='16' y1='2' x2='16' y2='10' stroke='%23c8a84b' stroke-width='1.5'/><line x1='16' y1='22' x2='16' y2='30' stroke='%23c8a84b' stroke-width='1.5'/><line x1='2' y1='16' x2='10' y2='16' stroke='%23c8a84b' stroke-width='1.5'/><line x1='22' y1='16' x2='30' y2='16' stroke='%23c8a84b' stroke-width='1.5'/></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {{
     --bg: #0d0f1a; --surface: #151828; --surface2: #1e2235;
-    --accent: #e63946; --green: #2dc653; --green-dim: rgba(45,198,83,0.03);
+    --accent: #e63946; --amber: #f4a261; --green: #2dc653;
     --text: #e8e8f0; --text2: #7a7d99; --border: #252840;
   }}
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-  body {{ font-family: 'Barlow', -apple-system, sans-serif;
-          background: var(--bg); color: var(--text); padding: 36px 28px; line-height: 1.5; }}
-  .page-header {{ margin-bottom: 24px; }}
-  h1 {{ font-family: 'Bebas Neue', sans-serif; font-size: 3rem; letter-spacing: 0.04em;
-        line-height: 1; margin-bottom: 6px; }}
-  h1 span {{ color: var(--accent); }}
-  .meta {{ color: var(--text2); font-family: 'JetBrains Mono', monospace; font-size: 0.73rem; }}
-  .toolbar {{ display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }}
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: var(--bg); color: var(--text); padding: 32px 24px; line-height: 1.5; }}
+  h1 {{ font-size: 1.6rem; margin-bottom: 4px; }}
+  .meta {{ color: var(--text2); font-size: 0.85rem; margin-bottom: 16px; }}
+  .toolbar {{ display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }}
   .search-wrap {{ position: relative; flex: 1; min-width: 200px; max-width: 360px; }}
   .search-wrap input {{
     width: 100%; background: var(--surface2); border: 1px solid var(--border);
-    color: var(--text); padding: 8px 12px 8px 34px; border-radius: 3px;
-    font-size: 0.88rem; outline: none; font-family: 'Barlow', sans-serif;
-    transition: border-color 0.15s;
+    color: var(--text); padding: 8px 12px 8px 34px; border-radius: 8px;
+    font-size: 0.88rem; outline: none;
   }}
   .search-wrap input:focus {{ border-color: var(--accent); }}
   .search-wrap::before {{ content: "⌕"; position: absolute; left: 10px; top: 50%;
     transform: translateY(-50%); color: var(--text2); font-size: 1rem; pointer-events: none; }}
   .filter-btns {{ display: flex; gap: 6px; }}
   .filter-btns button {{
-    background: transparent; border: 1px solid var(--border); color: var(--text2);
-    padding: 7px 14px; border-radius: 3px; font-size: 0.71rem; font-weight: 700;
-    font-family: 'Barlow Condensed', sans-serif;
-    cursor: pointer; text-transform: uppercase; letter-spacing: 0.09em;
-    transition: all 0.15s;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
+    padding: 7px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 700;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;
   }}
   .filter-btns button.active {{ background: var(--accent); border-color: var(--accent); color: #fff; }}
   .filter-btns button:hover:not(.active) {{ border-color: var(--text2); color: var(--text); }}
   .country-dropdown {{ position: relative; }}
   .country-trigger {{
-    background: transparent; border: 1px solid var(--border); color: var(--text);
-    padding: 7px 12px; border-radius: 3px; font-size: 0.82rem; outline: none; cursor: pointer;
-    font-family: 'Barlow', sans-serif; white-space: nowrap; transition: all 0.15s;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 12px; border-radius: 8px; font-size: 0.82rem; outline: none; cursor: pointer;
+    white-space: nowrap;
   }}
   .country-trigger.active {{ border-color: var(--accent); color: var(--accent); }}
   .country-panel {{
     display: none; position: absolute; top: calc(100% + 4px); left: 0; z-index: 100;
-    background: var(--surface2); border: 1px solid var(--border); border-radius: 3px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
     min-width: 180px; padding: 4px 0; max-height: 280px; overflow-y: auto;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   }}
   .country-panel.open {{ display: block; }}
   .country-option {{
@@ -217,14 +208,13 @@ html = f"""<!DOCTYPE html>
   .country-option:hover {{ background: var(--surface); }}
   .country-option input[type=checkbox] {{ accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }}
   .country-option.checked {{ color: var(--accent); }}
-  .count {{ color: var(--text2); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; margin-left: auto; }}
+  .count {{ color: var(--text2); font-size: 0.82rem; margin-left: auto; }}
   .wrap {{ overflow-x: auto; }}
-  table {{ width: 100%; border-collapse: collapse; font-size: 0.9rem; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 0.92rem; }}
   th {{
-    text-align: left; padding: 10px 14px; color: var(--text2);
-    font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
-    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em;
-    border-bottom: 1px solid var(--border); white-space: nowrap;
+    text-align: left; padding: 10px 14px; color: var(--text2); font-weight: 600;
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border); white-space: nowrap;
     cursor: pointer; user-select: none;
     position: sticky; top: 0; background: var(--bg); z-index: 10;
   }}
@@ -234,57 +224,51 @@ html = f"""<!DOCTYPE html>
   td {{ padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }}
   tr:hover td {{ background: var(--surface); }}
   tr.country-row td {{
-    background: transparent; color: var(--accent);
-    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
-    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em;
-    padding: 18px 14px 5px; border-bottom: 1px solid var(--border);
+    background: var(--surface2); color: var(--amber);
+    font-weight: 700; font-size: 0.8rem; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 8px 14px; border-bottom: none;
   }}
   td.name {{ font-weight: 600; color: var(--text); }}
-  .reg-open  {{ color: var(--green); font-family: 'JetBrains Mono', monospace; font-size: 0.71rem; }}
-  .reg-closed {{ color: var(--text2); font-family: 'JetBrains Mono', monospace; font-size: 0.71rem; }}
-  tr.row-open  td:first-child {{ border-left: 2px solid var(--green); }}
-  tr.row-closed td:first-child {{ border-left: 2px solid var(--border); }}
-  tr.row-open {{ background: var(--green-dim); }}
+  .reg-open  {{ color: var(--green); font-size: 0.78rem; font-weight: 700; }}
+  .reg-closed {{ color: var(--text2); font-size: 0.78rem; font-weight: 700; }}
+  tr.row-open  td:first-child {{ border-left: 3px solid var(--green); }}
+  tr.row-closed td:first-child {{ border-left: 3px solid #2d3055; }}
+  tr.row-open {{ background: rgba(45,198,83,0.03); }}
   .reg-btn {{
-    display: inline-block; background: transparent;
-    border: 1px solid var(--accent); color: var(--accent);
-    text-decoration: none; font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 4px 12px; border-radius: 2px; white-space: nowrap; transition: all 0.15s;
+    display: inline-block; background: var(--accent); color: #fff;
+    text-decoration: none; font-size: 0.78rem; font-weight: 700;
+    padding: 5px 12px; border-radius: 6px; white-space: nowrap;
   }}
-  .reg-btn:hover {{ background: var(--accent); color: #fff; }}
-  tr.row-closed {{ opacity: 0.45; }}
-  tr.row-closed:hover {{ opacity: 0.85; }}
+  .reg-btn:hover {{ opacity: 0.85; }}
+  tr.row-closed {{ opacity: 0.6; }}
+  tr.row-closed:hover {{ opacity: 1; }}
   .map-link {{ color: var(--text2); font-size: 0.82rem; white-space: nowrap; }}
-  .ical-icon {{ color: var(--text2); text-decoration: none; margin-right: 6px; font-size: 0.75em;
-    opacity: 0.4; cursor: pointer; display: inline-block; vertical-align: middle; white-space: nowrap;
-    transition: opacity 0.15s, color 0.15s; }}
+  .ical-icon {{ color: var(--text2); text-decoration: none; margin-right: 6px; font-size: 0.78em;
+    opacity: 0.55; cursor: pointer; display: inline-block; vertical-align: middle; white-space: nowrap; }}
   .ical-icon:hover {{ opacity: 1; color: var(--accent); }}
-  img.flag {{ width: 20px; height: 15px; vertical-align: middle; margin-left: 5px; border-radius: 1px; }}
+  img.flag {{ width: 20px; height: 15px; vertical-align: middle; margin-left: 5px; border-radius: 2px; }}
   small {{ display: block; margin-top: 4px; }}
-  .no-results {{ text-align: center; color: var(--text2); padding: 40px; display: none;
-    font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }}
+  .no-results {{ text-align: center; color: var(--text2); padding: 40px; display: none; }}
   @media (max-width: 700px) {{
-    body {{ padding: 14px; }}
-    h1 {{ font-size: 2.2rem; }}
+    body {{ padding: 12px; }}
     .wrap {{ overflow-x: unset; }}
     table {{ display: block; }}
     thead {{ display: none; }}
-    tbody {{ display: flex; flex-direction: column; gap: 6px; }}
-    tr.country-row {{ display: block; margin-top: 8px; }}
-    tr.country-row td {{ display: block; padding: 12px 14px 4px; }}
+    tbody {{ display: flex; flex-direction: column; gap: 8px; }}
+    tr.country-row {{ display: block; margin-top: 4px; }}
+    tr.country-row td {{ display: block; border-radius: 6px; }}
     tr:not(.country-row) {{
       display: grid;
       grid-template-columns: 1fr auto;
       grid-template-rows: auto auto auto;
       gap: 3px 10px;
       padding: 10px 12px;
-      border-radius: 3px;
+      border-radius: 10px;
       border: 1px solid var(--border);
       background: var(--surface);
     }}
-    tr.row-open  {{ border-left: 2px solid var(--green); background: var(--surface); }}
-    tr.row-closed {{ border-left: 2px solid var(--border); background: var(--surface); }}
+    tr.row-open  {{ border-left: 3px solid var(--green); background: var(--surface); }}
+    tr.row-closed {{ border-left: 3px solid #2d3055; background: var(--surface); }}
     tr.row-open  td:first-child,
     tr.row-closed td:first-child {{ border-left: none; }}
     tr:not(.country-row) td {{ padding: 0; border: none; background: transparent; }}
@@ -298,10 +282,8 @@ html = f"""<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div class="page-header">
-<h1>Upcoming <span>SRA</span> Matches</h1>
+<h1>Upcoming SRA Matches</h1>
 <div class="meta"><span id="gen-time" data-utc="{now_utc}">Generated {now_utc_str}</span> &nbsp;·&nbsp; {len(events)} matches found &nbsp;·&nbsp; <span id="next-update"></span></div>
-</div>
 <div class="toolbar">
   <div class="search-wrap"><input type="text" id="search" placeholder="Search matches or countries…" autocomplete="off"></div>
   <div class="filter-btns">
