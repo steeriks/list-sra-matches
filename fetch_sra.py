@@ -538,10 +538,13 @@ html = f"""<!DOCTYPE html>
     var el = document.getElementById('next-update'); if (!el) return;
     function tick() {{
       var now = new Date(), next = new Date(now);
-      next.setUTCHours(now.getUTCHours() + 1, 0, 0, 0);
+      var nextH = (Math.floor(now.getUTCHours() / 6) + 1) * 6;
+      if (nextH >= 24) {{ next.setUTCDate(next.getUTCDate() + 1); nextH = 0; }}
+      next.setUTCHours(nextH, 0, 0, 0);
       var diff = next - now;
       if (diff <= 0) {{ el.textContent = 'updating…'; return; }}
-      el.textContent = 'Next update ' + Math.floor(diff / 60000) + 'm';
+      var h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
+      el.textContent = 'Next update ' + (h > 0 ? h + 'h ' : '') + m + 'm';
     }}
     tick(); setInterval(tick, 60000);
   }})();
