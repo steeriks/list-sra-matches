@@ -225,7 +225,7 @@ html = f"""<!DOCTYPE html>
   }}
   td.name {{ font-weight: 600; color: var(--text); }}
   .reg-open  {{ color: var(--green); font-size: 0.78rem; font-weight: 700; }}
-  .reg-closed {{ color: var(--text2); font-size: 0.78rem; font-weight: 700; }}
+  .reg-closed {{ color: var(--accent); font-size: 0.78rem; font-weight: 700; }}
   tr.row-open  td:first-child {{ border-left: 3px solid var(--green); }}
   tr.row-closed td:first-child {{ border-left: 3px solid #2d3055; }}
   tr.row-open {{ background: rgba(45,198,83,0.03); }}
