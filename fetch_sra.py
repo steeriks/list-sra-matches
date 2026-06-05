@@ -534,7 +534,7 @@ html = f"""<!DOCTYPE html>
     var d = new Date(el.getAttribute('data-utc'));
     el.textContent = 'Generated ' + d.toLocaleString(undefined, {{
       day: '2-digit', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit', hour12: false
+      hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
     }});
   }})();
 
