@@ -101,7 +101,9 @@ for country in by_country:
 sorted_countries = sorted(by_country.keys(), key=lambda c: (0 if c == "Sweden" else 1, c))
 
 # ── Build HTML ─────────────────────────────────────────────
-now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+now_utc_dt = datetime.now(timezone.utc)
+now_utc     = now_utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+now_utc_str = now_utc_dt.strftime("%d %b %Y %H:%M UTC")
 
 COUNTRY_CODES = {
     "Sweden":"se","Finland":"fi","Estonia":"ee","Norway":"no","Denmark":"dk",
@@ -281,7 +283,7 @@ html = f"""<!DOCTYPE html>
 </head>
 <body>
 <h1>Upcoming SRA Matches</h1>
-<div class="meta"><span id="gen-time" data-utc="{now_utc}"></span> &nbsp;·&nbsp; {len(events)} matches found &nbsp;·&nbsp; <span id="next-update"></span></div>
+<div class="meta"><span id="gen-time" data-utc="{now_utc}">Generated {now_utc_str}</span> &nbsp;·&nbsp; {len(events)} matches found &nbsp;·&nbsp; <span id="next-update"></span></div>
 <div class="toolbar">
   <div class="search-wrap"><input type="text" id="search" placeholder="Search matches or countries…" autocomplete="off"></div>
   <div class="filter-btns">
