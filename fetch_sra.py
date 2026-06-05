@@ -138,10 +138,9 @@ for country in sorted_countries:
 
         reg_badge  = '<span class="reg-open">● Open</span>' if reg_now else '<span class="reg-closed">● Closed</span>'
         row_class  = "row-open" if reg_now else "row-closed"
-        event_id   = str(e.get("id") or "")
         match_link = f'<a href="{esc(event_url)}" target="_blank" class="reg-btn">SSI</a>' if event_url else ""
 
-        rows_html += f"""<tr class="{row_class}" data-id="{event_id}">
+        rows_html += f"""<tr class="{row_class}">
   <td class="name">{name}</td>
   <td>{date}</td>
   <td>{reg_open} – {reg_close}<br><small>{reg_badge}</small></td>
@@ -245,8 +244,6 @@ html = f"""<!DOCTYPE html>
   .ical-icon {{ color: var(--text2); text-decoration: none; margin-right: 6px; font-size: 0.78em;
     opacity: 0.55; cursor: pointer; display: inline-block; vertical-align: middle; white-space: nowrap; }}
   .ical-icon:hover {{ opacity: 1; color: var(--accent); }}
-  .new-badge {{ background: var(--accent); color: #fff; font-size: 0.65rem; font-weight: 700;
-    padding: 1px 5px; border-radius: 4px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.03em; }}
   img.flag {{ width: 20px; height: 15px; vertical-align: middle; margin-left: 5px; border-radius: 2px; }}
   small {{ display: block; margin-top: 4px; }}
   .no-results {{ text-align: center; color: var(--text2); padding: 40px; display: none; }}
@@ -330,7 +327,6 @@ html = f"""<!DOCTYPE html>
   var sortCol = -1, sortAsc = true;
   var activeFilter    = 'all';
   var activeCountries = new Set();
-  var NEW_TTL = 86400000;
 
   // Build flat data rows from the rendered HTML so sorting works
   // Each entry: {{ tr, country, sortKeys }}
@@ -535,43 +531,6 @@ html = f"""<!DOCTYPE html>
       render();
     }});
   }});
-
-  // ── New match detection (localStorage) ──────────────────────────────────────
-  (function() {{
-    allGroups.forEach(function(group) {{
-      group.rows.forEach(function(tr) {{
-        if (!tr.getAttribute('data-id')) {{
-          var a = tr.querySelector('a.reg-btn');
-          if (a) {{ var parts = a.href.split('/').filter(Boolean); var id = parts[parts.length - 1];
-            if (/^\\d+$/.test(id)) tr.setAttribute('data-id', id); }}
-        }}
-      }});
-    }});
-    var raw = localStorage.getItem('sra_seen'), seen = raw ? JSON.parse(raw) : null, now = Date.now();
-    var ids = new Set();
-    allGroups.forEach(function(g) {{ g.rows.forEach(function(tr) {{ var id = tr.getAttribute('data-id'); if (id) ids.add(id); }}); }});
-    if (!seen) {{
-      var s = {{}}; ids.forEach(function(id) {{ s[id] = 0; }});
-      localStorage.setItem('sra_seen', JSON.stringify(s)); return;
-    }}
-    var dirty = false;
-    ids.forEach(function(id) {{ if (!seen.hasOwnProperty(id)) {{ seen[id] = now; dirty = true; }} }});
-    Object.keys(seen).forEach(function(id) {{ if (!ids.has(id)) {{ delete seen[id]; dirty = true; }} }});
-    if (dirty) localStorage.setItem('sra_seen', JSON.stringify(seen));
-    allGroups.forEach(function(g) {{
-      g.rows.forEach(function(tr) {{
-        var id = tr.getAttribute('data-id');
-        if (id && seen[id] > 0 && (now - seen[id]) < NEW_TTL) {{
-          tr.classList.add('row-new');
-          var nc = tr.querySelector('td.name');
-          if (nc && !nc.querySelector('.new-badge')) {{
-            var b = document.createElement('span'); b.className = 'new-badge'; b.textContent = 'NEW';
-            nc.appendChild(b);
-          }}
-        }}
-      }});
-    }});
-  }})();
 
   // ── Next update countdown ─────────────────────────────────────────────────
   (function() {{
