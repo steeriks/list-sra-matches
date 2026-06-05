@@ -101,7 +101,7 @@ for country in by_country:
 sorted_countries = sorted(by_country.keys(), key=lambda c: (0 if c == "Sweden" else 1, c))
 
 # ── Build HTML ─────────────────────────────────────────────
-now_str = datetime.now(ZoneInfo("Europe/Stockholm")).strftime("%d %b %Y %H:%M")
+now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 COUNTRY_CODES = {
     "Sweden":"se","Finland":"fi","Estonia":"ee","Norway":"no","Denmark":"dk",
@@ -281,7 +281,7 @@ html = f"""<!DOCTYPE html>
 </head>
 <body>
 <h1>Upcoming SRA Matches</h1>
-<div class="meta">Generated {now_str} &nbsp;·&nbsp; {len(events)} matches found &nbsp;·&nbsp; <span id="next-update"></span></div>
+<div class="meta"><span id="gen-time" data-utc="{now_utc}"></span> &nbsp;·&nbsp; {len(events)} matches found &nbsp;·&nbsp; <span id="next-update"></span></div>
 <div class="toolbar">
   <div class="search-wrap"><input type="text" id="search" placeholder="Search matches or countries…" autocomplete="off"></div>
   <div class="filter-btns">
@@ -531,6 +531,16 @@ html = f"""<!DOCTYPE html>
       render();
     }});
   }});
+
+  // ── Generation timestamp in viewer's local timezone ─────────────────────
+  (function() {{
+    var el = document.getElementById('gen-time'); if (!el) return;
+    var d = new Date(el.getAttribute('data-utc'));
+    el.textContent = 'Generated ' + d.toLocaleString(undefined, {{
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    }});
+  }})();
 
   // ── Next update countdown ─────────────────────────────────────────────────
   (function() {{
