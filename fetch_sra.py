@@ -163,9 +163,9 @@ html = f"""<!DOCTYPE html>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {{
-    --bg: #0b1209; --surface: #111a0f; --surface2: #18231a;
-    --accent: #c8a84b; --green: #3dba6e; --green-dim: rgba(61,186,110,0.07);
-    --text: #d8e6cc; --text2: #5a7254; --border: #1f2e1c;
+    --bg: #0d0f1a; --surface: #151828; --surface2: #1e2235;
+    --accent: #e63946; --green: #2dc653; --green-dim: rgba(45,198,83,0.03);
+    --text: #e8e8f0; --text2: #7a7d99; --border: #252840;
   }}
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{ font-family: 'Barlow', -apple-system, sans-serif;
@@ -194,7 +194,7 @@ html = f"""<!DOCTYPE html>
     cursor: pointer; text-transform: uppercase; letter-spacing: 0.09em;
     transition: all 0.15s;
   }}
-  .filter-btns button.active {{ background: var(--accent); border-color: var(--accent); color: #0b1209; }}
+  .filter-btns button.active {{ background: var(--accent); border-color: var(--accent); color: #fff; }}
   .filter-btns button:hover:not(.active) {{ border-color: var(--text2); color: var(--text); }}
   .country-dropdown {{ position: relative; }}
   .country-trigger {{
@@ -252,7 +252,7 @@ html = f"""<!DOCTYPE html>
     font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
     padding: 4px 12px; border-radius: 2px; white-space: nowrap; transition: all 0.15s;
   }}
-  .reg-btn:hover {{ background: var(--accent); color: #0b1209; }}
+  .reg-btn:hover {{ background: var(--accent); color: #fff; }}
   tr.row-closed {{ opacity: 0.45; }}
   tr.row-closed:hover {{ opacity: 0.85; }}
   .map-link {{ color: var(--text2); font-size: 0.82rem; white-space: nowrap; }}
