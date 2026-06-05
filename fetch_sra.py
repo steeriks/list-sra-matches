@@ -1,4 +1,4 @@
-import urllib.request, json, ssl, sys, os
+import urllib.request, json, sys, os
 from datetime import datetime, timezone
 
 def _pause():
@@ -14,10 +14,6 @@ ENDPOINTS = [
 ]
 OUT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html")
 
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
-
 def gql(query, token=None):
     headers = {"Content-Type": "application/json", "x-api-key": KEY}
     if token:
@@ -26,8 +22,7 @@ def gql(query, token=None):
     for url in ENDPOINTS:
         try:
             req = urllib.request.Request(url, data=body, headers=headers, method="POST")
-            opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=ctx))
-            with opener.open(req, timeout=20) as r:
+            with urllib.request.urlopen(req, timeout=20) as r:
                 d = json.loads(r.read())
             if d.get("errors"):
                 raise Exception(" | ".join(e["message"] for e in d["errors"]))
