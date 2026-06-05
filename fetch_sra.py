@@ -545,15 +545,14 @@ html = f"""<!DOCTYPE html>
   // ── Next update countdown ─────────────────────────────────────────────────
   (function() {{
     var el = document.getElementById('next-update'); if (!el) return;
-    function next6h() {{
-      var n = new Date(), h = n.getUTCHours(), nh = (Math.floor(h / 6) + 1) * 6, dd = nh >= 24 ? 1 : 0;
-      if (nh >= 24) nh = 0;
-      return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + dd, nh, 0, 0));
+    function nextHour() {{
+      var n = new Date();
+      return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), n.getUTCHours() + 1, 0, 0));
     }}
     function tick() {{
-      var diff = next6h() - new Date(); if (diff <= 0) {{ el.textContent = 'updating…'; return; }}
-      var h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
-      el.textContent = 'Next update ' + (h > 0 ? h + 'h ' : '') + m + 'm';
+      var diff = nextHour() - new Date(); if (diff <= 0) {{ el.textContent = 'updating…'; return; }}
+      var m = Math.floor(diff / 60000);
+      el.textContent = 'Next update ' + m + 'm';
     }}
     tick(); setInterval(tick, 60000);
   }})();
