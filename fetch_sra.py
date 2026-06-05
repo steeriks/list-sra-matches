@@ -409,13 +409,7 @@ html = f"""<!DOCTYPE html>
   }});
 
   // Flags + multi-select country dropdown
-  var CODES = {{
-    'Sweden':'se','Finland':'fi','Estonia':'ee','Norway':'no','Denmark':'dk',
-    'Latvia':'lv','Lithuania':'lt','Poland':'pl','Germany':'de','Netherlands':'nl',
-    'Belgium':'be','France':'fr','Spain':'es','Italy':'it','United Kingdom':'gb',
-    'United States':'us','Canada':'ca','Australia':'au','Czech Republic':'cz',
-    'Austria':'at','Switzerland':'ch','Portugal':'pt'
-  }};
+  var CODES = {json.dumps(COUNTRY_CODES)};
   function makeFlag(country) {{
     var code = CODES[country]; if (!code) return null;
     var img = document.createElement('img');
