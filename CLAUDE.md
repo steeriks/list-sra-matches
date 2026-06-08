@@ -34,7 +34,13 @@ Everything lives in `fetch_sra.py`:
 
 ## Output file
 
-The script writes to `index.html` (not `sra_matches.html` — that file is a stale snapshot kept locally). Both are gitignored.
+The script writes to `index.html`. `sra_matches.html` (a stale local snapshot) is gitignored, but `index.html` is **not** — the GitHub Actions bot commits it to the repo on every run.
+
+## Deployment
+
+GitHub Actions (`.github/workflows/update-matches.yml`) runs `fetch_sra.py` every 6 hours and on manual dispatch. If `index.html` changed, it commits and pushes it. GitHub Pages then serves the result at https://steeriks.github.io/list-sra-matches/.
+
+Required GitHub repo secrets: `SSI_EMAIL`, `SSI_PASSWORD`, `SSI_KEY`.
 
 ## HTML features (implemented in the embedded JS)
 
