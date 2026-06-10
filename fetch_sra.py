@@ -12,6 +12,8 @@ ENDPOINTS = [
     "http://localhost:8765/graphql",
     "https://shootnscoreit.com/graphql/",
 ]
+if os.environ.get("GITHUB_ACTIONS") == "true":
+    ENDPOINTS = ENDPOINTS[1:]
 OUT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html")
 
 def gql(query, token=None):
