@@ -4,3 +4,4 @@ sra_matches.html
 __pycache__/
 *.pyc
 .env
+.DS_Store
