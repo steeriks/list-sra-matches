@@ -370,6 +370,26 @@ html = f"""<!DOCTYPE html>
   img.flag {{ width: 20px; height: 15px; vertical-align: middle; margin-left: 5px; border-radius: 2px; }}
   small {{ display: block; margin-top: 4px; }}
   .no-results {{ text-align: center; color: var(--text2); padding: 40px; display: none; }}
+  /* Tablets get the full table, but seven columns don't fit: on an iPad in
+     portrait the SSI link - the whole point of a row - sat ~350px off-screen
+     behind a sideways swipe nobody would think to make. Organizer is the worst
+     offender (long club names, ~340px on its own) and Competitors is the least
+     load-bearing, so drop both until there is room. */
+  @media (min-width: 701px) and (max-width: 1199px) {{
+    th:nth-child(5), td:nth-child(5),
+    th:nth-child(6), td:nth-child(6) {{ display: none; }}
+    /* Narrow date columns otherwise strand the day on the icon's line
+       ("Reg date 02" / "Jul 2026 - TBD"). Giving the label its own line lets the
+       date wrap on its own terms. Don't reach for white-space: nowrap here - it
+       widens these two columns enough to push Venue and the SSI button back off
+       the screen, which is the problem this whole block exists to solve. */
+    .ical-icon {{ display: block; margin-right: 0; }}
+  }}
+  /* Narrowest tablet band still overflows by ~30px with Venue in - drop it too.
+     Below 701px the card layout takes over and hides it anyway. */
+  @media (min-width: 701px) and (max-width: 767px) {{
+    th:nth-child(4), td:nth-child(4) {{ display: none; }}
+  }}
   @media (max-width: 700px) {{
     body {{ padding: 12px; }}
     .wrap {{ overflow-x: unset; }}
