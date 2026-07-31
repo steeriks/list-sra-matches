@@ -69,7 +69,7 @@ CAP_HINT   = 80    # at/above this a window is suspect - split it and re-ask
 MAX_SPLIT  = 6     # recursion depth guard for the splitting
 RETRIES    = 2     # per window, on top of the ENDPOINTS fallback inside gql()
 
-FIELDS = """id rule get_full_rule_display
+FIELDS = """id rule get_full_rule_display get_full_level_display
     name starts ends
     get_state_display get_region_display
     venue competitors_count
@@ -166,6 +166,17 @@ def discipline(e):
         return full if full.startswith("IPSC") else f"IPSC {full}"
     return full or rule.upper() or "Unknown"
 
+def level(e):
+    """Match level, or "" when the event doesn't declare one.
+
+    Level names are per-ruleset, not global: IPSC uses Level I/II/III, SRA uses
+    Club/Area/Nationals, Steel uses Tier-1/2/3. That is why the level dropdown is
+    built from whichever disciplines are currently selected instead of being a
+    fixed list. Rulesets that don't use levels report '--' or '-' as a filler.
+    """
+    v = (e.get("get_full_level_display") or "").strip()
+    return "" if v in ("--", "-") else v
+
 # Group by country, then sort by date within each country
 from collections import defaultdict, Counter
 by_country = defaultdict(list)
@@ -201,6 +212,16 @@ DISC_SECTIONS = [
     {"title": "Other", "items": _section(lambda d: d != "SRA" and not d.startswith("IPSC"))},
 ]
 
+# Levels sort by standing, not alphabetically - "Level III" must not land between
+# "Level I" and "Level II", and Club/Area/Nationals is a ladder too. Anything not
+# listed falls to the end, alphabetically.
+LEVEL_ORDER = [
+    "Level I", "Level II", "Level III", "Level IV", "Level V",
+    "Tier-1 (Local)", "Tier-2 (State)", "Tier-3 (Regional)",
+    "Club", "Regional", "Area", "Nationals", "International",
+    "Sanctioned", "Unsanctioned", "Training",
+]
+
 rows_html = ""
 for country in sorted_countries:
     country_events = by_country[country]
@@ -230,7 +251,7 @@ for country in sorted_countries:
         row_class  = "row-open" if reg_now else "row-closed"
         match_link = f'<a href="{esc(event_url)}" target="_blank" class="reg-btn">SSI</a>' if event_url else ""
 
-        rows_html += f"""<tr class="{row_class}" data-d="{esc(discipline(e))}">
+        rows_html += f"""<tr class="{row_class}" data-d="{esc(discipline(e))}" data-l="{esc(level(e))}">
   <td class="name">{name}</td>
   <td>{date}</td>
   <td>{reg_open} – {reg_close}<br><small>{reg_badge}</small></td>
@@ -389,6 +410,10 @@ html = f"""<!DOCTYPE html>
     <button class="country-trigger" id="disc-trigger">All disciplines ▾</button>
     <div class="country-panel" id="disc-panel"></div>
   </div>
+  <div class="country-dropdown" id="level-dropdown">
+    <button class="country-trigger" id="level-trigger">All levels ▾</button>
+    <div class="country-panel" id="level-panel"></div>
+  </div>
   <div class="country-dropdown" id="country-dropdown">
     <button class="country-trigger" id="country-trigger">All countries ▾</button>
     <div class="country-panel" id="country-panel"></div>
@@ -426,6 +451,9 @@ html = f"""<!DOCTYPE html>
   var countryPanel   = document.getElementById('country-panel');
   var discTrigger    = document.getElementById('disc-trigger');
   var discPanel      = document.getElementById('disc-panel');
+  var levelTrigger   = document.getElementById('level-trigger');
+  var levelPanel     = document.getElementById('level-panel');
+  var levelDropdown  = document.getElementById('level-dropdown');
 
   var sortCol = -1, sortAsc = true;
   var activeFilter    = 'all';
@@ -445,6 +473,17 @@ html = f"""<!DOCTYPE html>
   }}
   function saveDisciplines() {{
     try {{ localStorage.setItem(DISC_KEY, JSON.stringify([...activeDisciplines])); }} catch (err) {{}}
+  }}
+
+  // Level filter. Level names are per-ruleset (IPSC: Level I/II/III, SRA:
+  // Club/Area/Nationals), so the options are rebuilt from whatever disciplines
+  // are selected rather than being one fixed list.
+  var LEVEL_KEY = 'sra_levels';
+  var activeLevels;
+  try {{ activeLevels = new Set(JSON.parse(localStorage.getItem(LEVEL_KEY) || '[]')); }}
+  catch (err) {{ activeLevels = new Set(); }}
+  function saveLevels() {{
+    try {{ localStorage.setItem(LEVEL_KEY, JSON.stringify([...activeLevels])); }} catch (err) {{}}
   }}
 
   // Build flat data rows from the rendered HTML so sorting works
@@ -601,7 +640,7 @@ html = f"""<!DOCTYPE html>
         if (cb.checked) activeDisciplines.add(item.label);
         else activeDisciplines.delete(item.label);
         lbl.classList.toggle('checked', cb.checked);
-        saveDisciplines(); updateDiscTrigger(); render();
+        saveDisciplines(); updateDiscTrigger(); buildLevels(); render();
       }});
       lbl.appendChild(cb);
       lbl.appendChild(document.createTextNode(item.label));
@@ -617,6 +656,71 @@ html = f"""<!DOCTYPE html>
   document.addEventListener('click', function() {{ discPanel.classList.remove('open'); }});
   discPanel.addEventListener('click', function(e) {{ e.stopPropagation(); }});
   updateDiscTrigger();
+
+  // ── Level dropdown (rebuilt whenever the discipline selection changes) ─────
+  var LEVEL_ORDER = {json.dumps(LEVEL_ORDER)};
+  function matchesDiscipline(tr) {{
+    return activeDisciplines.size === 0 || activeDisciplines.has(tr.getAttribute('data-d'));
+  }}
+  function updateLevelTrigger() {{
+    var n = activeLevels.size;
+    levelTrigger.textContent = n === 0 ? 'All levels ▾'
+                             : n === 1 ? [...activeLevels][0] + ' ▾'
+                             : n + ' levels ▾';
+    levelTrigger.classList.toggle('active', n > 0);
+  }}
+  function buildLevels() {{
+    var counts = {{}};
+    allGroups.forEach(function(group) {{
+      group.rows.forEach(function(tr) {{
+        if (!matchesDiscipline(tr)) return;
+        var lv = tr.getAttribute('data-l') || '';
+        if (lv) counts[lv] = (counts[lv] || 0) + 1;
+      }});
+    }});
+    var levels = Object.keys(counts).sort(function(a, b) {{
+      var ia = LEVEL_ORDER.indexOf(a), ib = LEVEL_ORDER.indexOf(b);
+      if (ia < 0) ia = LEVEL_ORDER.length;
+      if (ib < 0) ib = LEVEL_ORDER.length;
+      return ia !== ib ? ia - ib : a.localeCompare(b);
+    }});
+
+    // Drop selected levels the new discipline set doesn't offer, otherwise the
+    // page would show nothing with no visible control explaining why.
+    [...activeLevels].forEach(function(lv) {{ if (!counts[lv]) activeLevels.delete(lv); }});
+    saveLevels();
+
+    while (levelPanel.firstChild) levelPanel.removeChild(levelPanel.firstChild);
+    levels.forEach(function(lv) {{
+      var lbl = document.createElement('label');
+      lbl.className = 'country-option';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.value = lv;
+      cb.checked = activeLevels.has(lv);
+      lbl.classList.toggle('checked', cb.checked);
+      cb.addEventListener('change', function() {{
+        if (cb.checked) activeLevels.add(lv); else activeLevels.delete(lv);
+        lbl.classList.toggle('checked', cb.checked);
+        saveLevels(); updateLevelTrigger(); render();
+      }});
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode(lv));
+      var n = document.createElement('span');
+      n.className = 'opt-n'; n.textContent = counts[lv];
+      lbl.appendChild(n);
+      levelPanel.appendChild(lbl);
+    }});
+    // Nothing in view declares a level (e.g. RESUL or IDPA alone) - hide the
+    // control rather than offer an empty menu.
+    levelDropdown.style.display = levels.length ? '' : 'none';
+    updateLevelTrigger();
+  }}
+  levelTrigger.addEventListener('click', function(e) {{
+    e.stopPropagation(); levelPanel.classList.toggle('open');
+  }});
+  document.addEventListener('click', function() {{ levelPanel.classList.remove('open'); }});
+  levelPanel.addEventListener('click', function(e) {{ e.stopPropagation(); }});
+  buildLevels();
 
   function cellText(tr, col) {{
     if (!tr.cells[col]) return '';
@@ -645,7 +749,8 @@ html = f"""<!DOCTYPE html>
     allGroups.forEach(function(group) {{
       if (activeCountries.size > 0 && !activeCountries.has(group.label)) return;
       var visible = group.rows.filter(function(tr) {{
-        if (activeDisciplines.size > 0 && !activeDisciplines.has(tr.getAttribute('data-d'))) return false;
+        if (!matchesDiscipline(tr)) return false;
+        if (activeLevels.size > 0 && !activeLevels.has(tr.getAttribute('data-l'))) return false;
         if (activeFilter === 'open' && !tr.classList.contains('row-open')) return false;
         if (!q) return true;
         var text = tr.textContent.toLowerCase();

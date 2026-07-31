@@ -20,6 +20,10 @@ job keeps up to date.
 - **Discipline filter** — multi-select dropdown grouped into SRA / IPSC / Other, with a count
   next to each. **SRA is ticked to begin with**, and your choice is remembered between visits.
   Untick everything to see every discipline at once
+- **Level filter** — multi-select dropdown that follows your discipline choice, because level
+  names differ per ruleset: pick IPSC and you get Level I/II/III, Training, Unsanctioned; pick
+  SRA and you get Club, Area, Regional, Nationals. It disappears for rulesets that don't use
+  levels at all
 - **Country filter** — multi-select dropdown
 - **Sortable columns** — click any header (country grouping is hidden while a sort is active)
 - **iCal export** — the calendar icon on a date downloads that match as an `.ics` file
