@@ -310,6 +310,11 @@ html = f"""<!DOCTYPE html>
     box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   }}
   .country-panel.open {{ display: block; }}
+  /* A trigger sitting near the right edge would otherwise open its panel off
+     the screen - openPanel() flips it, and the cap covers the case where the
+     panel is wider than the viewport on its own. */
+  .country-panel.flip {{ left: auto; right: 0; }}
+  .country-panel {{ max-width: calc(100vw - 24px); }}
   .country-option {{
     display: flex; align-items: center; gap: 8px; padding: 7px 14px;
     cursor: pointer; font-size: 0.85rem; color: var(--text); user-select: none;
@@ -608,11 +613,29 @@ html = f"""<!DOCTYPE html>
     lbl.appendChild(document.createTextNode(group.label));
     countryPanel.appendChild(lbl);
   }});
-  countryTrigger.addEventListener('click', function(e) {{
-    e.stopPropagation(); countryPanel.classList.toggle('open');
+  // All three dropdowns open the same way. On a phone the right-hand triggers
+  // would push their panel past the screen edge, so measure once it is visible
+  // and right-align it instead.
+  var PANELS = [];
+  function wirePanel(trigger, panel) {{
+    PANELS.push(panel);
+    trigger.addEventListener('click', function(e) {{
+      e.stopPropagation();
+      var opening = !panel.classList.contains('open');
+      PANELS.forEach(function(p) {{ p.classList.remove('open'); }});
+      if (!opening) return;
+      panel.classList.remove('flip');
+      panel.classList.add('open');
+      if (panel.getBoundingClientRect().right > document.documentElement.clientWidth) {{
+        panel.classList.add('flip');
+      }}
+    }});
+    panel.addEventListener('click', function(e) {{ e.stopPropagation(); }});
+  }}
+  document.addEventListener('click', function() {{
+    PANELS.forEach(function(p) {{ p.classList.remove('open'); }});
   }});
-  document.addEventListener('click', function() {{ countryPanel.classList.remove('open'); }});
-  countryPanel.addEventListener('click', function(e) {{ e.stopPropagation(); }});
+  wirePanel(countryTrigger, countryPanel);
 
   // ── Discipline dropdown ───────────────────────────────────────────────────
   var DISC_SECTIONS = {json.dumps(DISC_SECTIONS)};
@@ -650,11 +673,7 @@ html = f"""<!DOCTYPE html>
       discPanel.appendChild(lbl);
     }});
   }});
-  discTrigger.addEventListener('click', function(e) {{
-    e.stopPropagation(); discPanel.classList.toggle('open');
-  }});
-  document.addEventListener('click', function() {{ discPanel.classList.remove('open'); }});
-  discPanel.addEventListener('click', function(e) {{ e.stopPropagation(); }});
+  wirePanel(discTrigger, discPanel);
   updateDiscTrigger();
 
   // ── Level dropdown (rebuilt whenever the discipline selection changes) ─────
@@ -715,11 +734,7 @@ html = f"""<!DOCTYPE html>
     levelDropdown.style.display = levels.length ? '' : 'none';
     updateLevelTrigger();
   }}
-  levelTrigger.addEventListener('click', function(e) {{
-    e.stopPropagation(); levelPanel.classList.toggle('open');
-  }});
-  document.addEventListener('click', function() {{ levelPanel.classList.remove('open'); }});
-  levelPanel.addEventListener('click', function(e) {{ e.stopPropagation(); }});
+  wirePanel(levelTrigger, levelPanel);
   buildLevels();
 
   function cellText(tr, col) {{

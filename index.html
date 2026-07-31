@@ -47,6 +47,11 @@
     box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   }
   .country-panel.open { display: block; }
+  /* A trigger sitting near the right edge would otherwise open its panel off
+     the screen - openPanel() flips it, and the cap covers the case where the
+     panel is wider than the viewport on its own. */
+  .country-panel.flip { left: auto; right: 0; }
+  .country-panel { max-width: calc(100vw - 24px); }
   .country-option {
     display: flex; align-items: center; gap: 8px; padding: 7px 14px;
     cursor: pointer; font-size: 0.85rem; color: var(--text); user-select: none;
@@ -136,7 +141,7 @@
 </head>
 <body>
 <h1>Upcoming Matches</h1>
-<div class="meta">SRA, IPSC and more &nbsp;·&nbsp; <span id="gen-time" data-utc="2026-07-31T13:20:45Z">Generated 31 Jul 2026 13:20 UTC</span> &nbsp;·&nbsp; 504 matches found &nbsp;·&nbsp; <span id="next-update"></span></div>
+<div class="meta">SRA, IPSC and more &nbsp;·&nbsp; <span id="gen-time" data-utc="2026-07-31T13:41:39Z">Generated 31 Jul 2026 13:41 UTC</span> &nbsp;·&nbsp; 504 matches found &nbsp;·&nbsp; <span id="next-update"></span></div>
 <div class="toolbar">
   <div class="search-wrap"><input type="text" id="search" placeholder="Search matches or countries…" autocomplete="off"></div>
   <div class="filter-btns">
@@ -742,7 +747,7 @@
 <tr class="row-closed" data-d="IPSC Handgun" data-l="Level II">
   <td class="name">Little Trouble in Big Sätra 2026</td>
   <td>12 Sep 2026 – 13 Sep 2026</td>
-  <td>15 Aug 2026 – 01 Sep 2026<br><small><span class="reg-closed">● Closed</span></small></td>
+  <td>22 Aug 2026 – 01 Sep 2026<br><small><span class="reg-closed">● Closed</span></small></td>
   <td>Stora Sätra, Livgardets Skjutfält</td>
   <td>Livgardets Skytteförening</td>
   <td>2</td>
@@ -1015,7 +1020,7 @@
   <td>01 Jul 2026 – 31 Aug 2026<br><small><span class="reg-open">● Open</span></small></td>
   <td>Livgardets Skjutfält, Stockholm, Kungsängen</td>
   <td>Livgardets Skytteförening</td>
-  <td>51</td>
+  <td>53</td>
   <td><a href="https://shootnscoreit.com/event/22/28361/" target="_blank" class="reg-btn">SSI</a></td>
 </tr>
 <tr class="row-closed" data-d="IPSC Handgun &amp; PCC" data-l="Level II">
@@ -1991,7 +1996,7 @@
   <td>31 Jul 2026 – 10 Aug 2026<br><small><span class="reg-open">● Open</span></small></td>
   <td>—</td>
   <td>Omega Team Ry</td>
-  <td>12</td>
+  <td>13</td>
   <td><a href="https://shootnscoreit.com/event/22/29345/" target="_blank" class="reg-btn">SSI</a></td>
 </tr>
 <tr class="row-closed" data-d="IPSC Handgun &amp; PCC" data-l="Level I">
@@ -4891,11 +4896,29 @@
     lbl.appendChild(document.createTextNode(group.label));
     countryPanel.appendChild(lbl);
   });
-  countryTrigger.addEventListener('click', function(e) {
-    e.stopPropagation(); countryPanel.classList.toggle('open');
+  // All three dropdowns open the same way. On a phone the right-hand triggers
+  // would push their panel past the screen edge, so measure once it is visible
+  // and right-align it instead.
+  var PANELS = [];
+  function wirePanel(trigger, panel) {
+    PANELS.push(panel);
+    trigger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var opening = !panel.classList.contains('open');
+      PANELS.forEach(function(p) { p.classList.remove('open'); });
+      if (!opening) return;
+      panel.classList.remove('flip');
+      panel.classList.add('open');
+      if (panel.getBoundingClientRect().right > document.documentElement.clientWidth) {
+        panel.classList.add('flip');
+      }
+    });
+    panel.addEventListener('click', function(e) { e.stopPropagation(); });
+  }
+  document.addEventListener('click', function() {
+    PANELS.forEach(function(p) { p.classList.remove('open'); });
   });
-  document.addEventListener('click', function() { countryPanel.classList.remove('open'); });
-  countryPanel.addEventListener('click', function(e) { e.stopPropagation(); });
+  wirePanel(countryTrigger, countryPanel);
 
   // ── Discipline dropdown ───────────────────────────────────────────────────
   var DISC_SECTIONS = [{"title": "SRA", "items": [{"label": "SRA", "n": 98}]}, {"title": "IPSC", "items": [{"label": "IPSC Handgun", "n": 119}, {"label": "IPSC Handgun & PCC", "n": 92}, {"label": "IPSC Action Air", "n": 28}, {"label": "IPSC Mini Rifle", "n": 17}, {"label": "IPSC Shotgun", "n": 17}, {"label": "IPSC Rifle", "n": 16}, {"label": "IPSC PCC", "n": 12}, {"label": "IPSC Rifle & PCC", "n": 4}, {"label": "IPSC Handgun, Mini Rifle & PCC", "n": 1}]}, {"title": "Other", "items": [{"label": "RESUL", "n": 24}, {"label": "PRS Points (100p)", "n": 19}, {"label": "DMR", "n": 9}, {"label": "IDPA Handgun", "n": 7}, {"label": "NRA Precision Pistol", "n": 6}, {"label": "NROF Combined", "n": 6}, {"label": "Precisionsskjutning", "n": 5}, {"label": "Steel", "n": 5}, {"label": "NTSA", "n": 4}, {"label": "SADPA MPD Handgun", "n": 3}, {"label": "SADPA MPD Multi-Platform", "n": 3}, {"label": "Milit\u00e4r snabbmatch", "n": 2}, {"label": "NROF Rifle", "n": 2}, {"label": "PRS Points (200p)", "n": 2}, {"label": "Pro-Am Normal", "n": 1}, {"label": "SADPA MPD Rifle", "n": 1}, {"label": "Sivilpistol", "n": 1}]}];
@@ -4933,11 +4956,7 @@
       discPanel.appendChild(lbl);
     });
   });
-  discTrigger.addEventListener('click', function(e) {
-    e.stopPropagation(); discPanel.classList.toggle('open');
-  });
-  document.addEventListener('click', function() { discPanel.classList.remove('open'); });
-  discPanel.addEventListener('click', function(e) { e.stopPropagation(); });
+  wirePanel(discTrigger, discPanel);
   updateDiscTrigger();
 
   // ── Level dropdown (rebuilt whenever the discipline selection changes) ─────
@@ -4998,11 +5017,7 @@
     levelDropdown.style.display = levels.length ? '' : 'none';
     updateLevelTrigger();
   }
-  levelTrigger.addEventListener('click', function(e) {
-    e.stopPropagation(); levelPanel.classList.toggle('open');
-  });
-  document.addEventListener('click', function() { levelPanel.classList.remove('open'); });
-  levelPanel.addEventListener('click', function(e) { e.stopPropagation(); });
+  wirePanel(levelTrigger, levelPanel);
   buildLevels();
 
   function cellText(tr, col) {
