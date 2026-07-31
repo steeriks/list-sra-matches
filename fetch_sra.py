@@ -269,6 +269,13 @@ html = f"""<!DOCTYPE html>
 <title>Upcoming Matches</title>
 <style>
   :root {{
+    /* The page is dark at every system setting - there is no light variant.
+       Declaring it stops the browser from styling the parts we don't paint
+       ourselves in its light defaults: unchecked checkboxes came out as white
+       squares on the dark filter panels, and scrollbars, the caret and Chrome's
+       autofill background were all light too. It also tells auto-dark-mode to
+       leave the page alone deliberately rather than by heuristic. */
+    color-scheme: dark;
     --bg: #0d0f1a; --surface: #151828; --surface2: #1e2235;
     --accent: #e63946; --amber: #f4a261; --green: #2dc653;
     --text: #e8e8f0; --text2: #7a7d99; --border: #252840;
