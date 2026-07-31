@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A single-file Python script that fetches upcoming SRA (Scandinavian/Finnish reservist shooting sports) matches from the [shootnscoreit.com](https://shootnscoreit.com) GraphQL API and generates a self-contained HTML dashboard (`index.html`).
+A single-file Python script that fetches upcoming matches from the [shootnscoreit.com](https://shootnscoreit.com) GraphQL API and generates a self-contained HTML dashboard (`index.html`).
+
+SRA (Scandinavian/Finnish reservist shooting sports) is the point of the page and is the pre-selected discipline, but every ruleset the API returns is included — IPSC broken down per discipline, plus RESUL, PRS, DMR, IDPA, NROF, SADPA, Steel and the rest — so they can be filtered in.
 
 ## Running the fetcher
 
@@ -28,9 +30,23 @@ python fetch_sra.py
 Everything lives in `fetch_sra.py`:
 
 1. **Auth** — GraphQL `token_auth` mutation to get a JWT.
-2. **Two-window fetch** — The API silently caps results to ~4 months. To work around this, the script queries twice: `starts_after=today` and `starts_after=today+90d`, then deduplicates by event ID.
-3. **Group & sort** — Events are grouped by country (`get_region_display`), sorted by date within each group. Sweden is sorted first; all other countries alphabetically.
-4. **HTML generation** — The entire page (CSS + data + JS) is written inline into `index.html` in the same directory. There is no separate template file; the HTML string is built directly in `fetch_sra.py`.
+2. **Weekly sweep** — 78 week-sized windows (`starts_after` + `starts_before`) covering 18 months, plus one open-ended tail query, deduplicated by event ID. ~80 calls, under a minute. See the cap section below for why it is shaped this way.
+3. **Discipline label** — `discipline()` maps `rule` + `get_full_rule_display` to one canonical name and writes it as `data-d` on each row. Organizers type that field freely, so IPSC arrives as both `Handgun` and `IPSC Handgun`, `Action Air` and `IPSC Action Air`. Normalization is mechanical (prefix `IPSC `, shorten `Pistol Caliber Carbine` to `PCC`) rather than a lookup table, so an unseen variant still lands in the right bucket. All `rule="sr"` variants collapse to `SRA`; other rulesets already report clean labels and pass through.
+4. **Group & sort** — Events are grouped by country (`get_region_display`), sorted by date within each group. Sweden is sorted first; all other countries alphabetically.
+5. **HTML generation** — The entire page (CSS + data + JS) is written inline into `index.html` in the same directory. There is no separate template file; the HTML string is built directly in `fetch_sra.py`.
+
+## The API result cap
+
+The API truncates a query at roughly 90–100 rows. It is a **result cap, not a date cap** — earlier versions of this file claimed "~4 months", which was a misreading. `rule: "sr"` alone returns 98 events reaching ~10 months out, because SRA is sparse enough to fit inside the cap; ask for every ruleset at once and the same ~90 rows cover barely two weeks.
+
+Consequences worth knowing before changing the fetch:
+
+- **`rule` cannot be combined.** `rule: "sr,ip"` and `rule: ""` both return zero. One code per query, or omit the argument.
+- **`starts_before` works**, which is what makes window pagination possible.
+- **`sub_rule` is not a discipline.** It is not accepted as a filter argument at all (server-side `Cannot resolve keyword` error), and as a field it holds the scoring method (`nm`, `to`).
+- A week of *all* rulesets is ~10 events worldwide, leaving a wide margin. `fetch_window()` still halves any window that comes back at `CAP_HINT` (80) rows or more, so growth on SSI's side cannot silently start dropping matches off the end.
+
+**The fetch must never write a partial page.** If a window fails after its retries the script exits non-zero without touching `index.html`. The workflow commits that file unattended every 6h, so a half-fetched page would quietly replace a complete one and nobody would notice.
 
 ## Output file
 
@@ -46,6 +62,7 @@ Required GitHub repo secrets: `SSI_EMAIL`, `SSI_PASSWORD`, `SSI_KEY`.
 
 - **Search** — live text filter across match name and country
 - **Reg. Open filter** — toggle to show only matches with open registration
+- **Discipline multi-select dropdown** — sectioned SRA / IPSC / Other, matched against each row's `data-d`. **SRA is checked on first visit**; the selection is then remembered in `localStorage` under `sra_disciplines`, so the 6-hourly regeneration doesn't reset someone who follows IPSC. An empty selection means "show everything", the same convention as the country filter
 - **Country multi-select dropdown** — filter by one or more countries
 - **Sortable columns** — click any header; country grouping is hidden while a sort is active
 - **iCal export** — calendar icons on date cells trigger `.ics` download

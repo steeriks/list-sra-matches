@@ -48,14 +48,28 @@ if not res["success"]:
 token = res["token"]["token"]
 print("Logged in.")
 
-# ── Fetch (two staggered windows to bypass ~4-month API cap) ──────────────
+# ── Fetch ──────────────────────────────────────────────────────────────────
+# The API silently truncates a query at roughly 90-100 rows. It is a *result*
+# cap, not the date cap this script used to assume: `rule: "sr"` alone returns
+# 98 events reaching ~10 months out, because SRA is sparse enough to fit. Ask
+# for every ruleset at once and the same 90-odd rows cover barely two weeks.
+#
+# So instead of filtering by rule (which can't be combined anyway - `rule:
+# "sr,ip"` returns nothing) we sweep week by week with starts_after +
+# starts_before and merge. A week of *all* rulesets is ~10 events worldwide,
+# leaving a wide margin to the cap, and it gives us every discipline for free.
 from zoneinfo import ZoneInfo
-from datetime import timedelta
+from datetime import timedelta, date
+
 now_local = datetime.now(ZoneInfo("Europe/Stockholm"))
 today     = now_local.strftime("%Y-%m-%d")
-overlap   = (now_local + timedelta(days=90)).strftime("%Y-%m-%d")
 
-FIELDS = """id get_content_type_key
+WEEKS      = 78    # 18 months of week-sized windows, then one open-ended tail query
+CAP_HINT   = 80    # at/above this a window is suspect - split it and re-ask
+MAX_SPLIT  = 6     # recursion depth guard for the splitting
+RETRIES    = 2     # per window, on top of the ENDPOINTS fallback inside gql()
+
+FIELDS = """id rule get_full_rule_display
     name starts ends
     get_state_display get_region_display
     venue competitors_count
@@ -66,18 +80,62 @@ FIELDS = """id get_content_type_key
     organizer { id name }
     get_full_absolute_url"""
 
-print("Fetching upcoming SRA matches...")
-try:
-    d1 = gql(f'{{ events(rule: "sr", starts_after: "{today}") {{ {FIELDS} }} }}', token)
-    d2 = gql(f'{{ events(rule: "sr", starts_after: "{overlap}") {{ {FIELDS} }} }}', token)
-except Exception as e:
-    print(f"ERROR: {e}"); _pause(); sys.exit(1)
+capped_windows = []
 
-seen, events = set(), []
-for e in (d1.get("events", []) + d2.get("events", [])):
-    if e["id"] not in seen:
-        seen.add(e["id"]); events.append(e)
-print(f"Found {len(events)} matches (window 1: {len(d1.get('events',[]))}, window 2: {len(d2.get('events',[]))} raw).")
+def fetch_window(after, before=None, depth=0):
+    """Events in [after, before). Splits itself if the API looks like it capped us.
+
+    Raises on failure - the caller must not fall back to partial data, because a
+    short list here is indistinguishable from "quiet week" once it reaches HTML.
+    """
+    args = f'starts_after: "{after}"' + (f', starts_before: "{before}"' if before else "")
+    last = None
+    for attempt in range(RETRIES + 1):
+        try:
+            rows = gql(f'{{ events({args}) {{ {FIELDS} }} }}', token).get("events", []) or []
+            break
+        except Exception as ex:
+            last = ex
+    else:
+        raise Exception(f"window {after}..{before or 'end'} failed after {RETRIES + 1} tries: {last}")
+
+    if len(rows) < CAP_HINT or not before:
+        return rows
+
+    # Suspiciously full. Halve the window and ask again so growth on SSI's side
+    # never silently starts dropping matches off the end of the page.
+    a, b = date.fromisoformat(after), date.fromisoformat(before)
+    if depth >= MAX_SPLIT or (b - a).days <= 1:
+        capped_windows.append((after, before, len(rows)))
+        return rows
+    mid = a + (b - a) / 2
+    return (fetch_window(after, mid.isoformat(), depth + 1)
+            + fetch_window(mid.isoformat(), before, depth + 1))
+
+print("Fetching upcoming matches (all rulesets)...")
+events, seen = [], set()
+try:
+    cursor = date.fromisoformat(today)
+    for _ in range(WEEKS):
+        nxt = cursor + timedelta(days=7)
+        rows = fetch_window(cursor.isoformat(), nxt.isoformat())
+        cursor = nxt
+        for e in rows:
+            if e["id"] not in seen:
+                seen.add(e["id"]); events.append(e)
+    for e in fetch_window(cursor.isoformat()):          # tail beyond the sweep
+        if e["id"] not in seen:
+            seen.add(e["id"]); events.append(e)
+except Exception as e:
+    # Deliberately no partial write: the workflow commits index.html unattended
+    # every 6h, so a half-fetched page would quietly replace a complete one.
+    print(f"ERROR: {e}\nAborting without touching {OUT_FILE}")
+    _pause(); sys.exit(1)
+
+print(f"Found {len(events)} matches across {WEEKS} weekly windows.")
+if capped_windows:
+    print(f"WARNING: {len(capped_windows)} window(s) still hit the result cap after "
+          f"splitting - matches may be missing: {capped_windows}")
 
 def fmt(s):
     if not s: return "TBD"
@@ -87,8 +145,29 @@ def fmt(s):
 def esc(s):
     return str(s or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"',"&quot;")
 
+def discipline(e):
+    """Canonical discipline label for the filter dropdown.
+
+    `get_full_rule_display` is typed by organizers, so the same discipline
+    arrives under several spellings - 'Handgun' and 'IPSC Handgun', 'Action Air'
+    and 'IPSC Action Air'. Normalize IPSC mechanically (prefix, and shorten the
+    one long-form name) rather than with a lookup table, so a variant nobody has
+    used yet still lands in the right bucket instead of vanishing into its own.
+    Every other ruleset already reports a clean, consistent label.
+    """
+    rule = (e.get("rule") or "").strip()
+    full = (e.get("get_full_rule_display") or "").strip()
+    if rule == "sr":
+        return "SRA"                       # 'SRA' and the long four-gun variant
+    if rule == "ip":
+        full = full.replace("Pistol Caliber Carbine", "PCC")
+        if not full:
+            return "IPSC"
+        return full if full.startswith("IPSC") else f"IPSC {full}"
+    return full or rule.upper() or "Unknown"
+
 # Group by country, then sort by date within each country
-from collections import defaultdict
+from collections import defaultdict, Counter
 by_country = defaultdict(list)
 for e in events:
     country = e.get("get_region_display") or "Unknown"
@@ -107,8 +186,20 @@ COUNTRY_CODES = {
     "Latvia":"lv","Lithuania":"lt","Poland":"pl","Germany":"de","Netherlands":"nl",
     "Belgium":"be","France":"fr","Spain":"es","Italy":"it","United Kingdom":"gb",
     "United States":"us","Canada":"ca","Australia":"au","Czech Republic":"cz",
-    "Austria":"at","Switzerland":"ch","Portugal":"pt",
+    "Austria":"at","Switzerland":"ch","Portugal":"pt","South Africa":"za",
 }
+
+# Discipline options for the dropdown, in three sections. Counts are baked in so
+# the panel can show how much each choice is worth without the page recounting.
+disc_counts = Counter(discipline(e) for e in events)
+def _section(pred):
+    return [{"label": d, "n": n} for d, n in
+            sorted(disc_counts.items(), key=lambda kv: (-kv[1], kv[0])) if pred(d)]
+DISC_SECTIONS = [
+    {"title": "SRA",   "items": _section(lambda d: d == "SRA")},
+    {"title": "IPSC",  "items": _section(lambda d: d.startswith("IPSC"))},
+    {"title": "Other", "items": _section(lambda d: d != "SRA" and not d.startswith("IPSC"))},
+]
 
 rows_html = ""
 for country in sorted_countries:
@@ -139,7 +230,7 @@ for country in sorted_countries:
         row_class  = "row-open" if reg_now else "row-closed"
         match_link = f'<a href="{esc(event_url)}" target="_blank" class="reg-btn">SSI</a>' if event_url else ""
 
-        rows_html += f"""<tr class="{row_class}">
+        rows_html += f"""<tr class="{row_class}" data-d="{esc(discipline(e))}">
   <td class="name">{name}</td>
   <td>{date}</td>
   <td>{reg_open} – {reg_close}<br><small>{reg_badge}</small></td>
@@ -154,7 +245,7 @@ html = f"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Upcoming SRA Matches</title>
+<title>Upcoming Matches</title>
 <style>
   :root {{
     --bg: #0d0f1a; --surface: #151828; --surface2: #1e2235;
@@ -205,6 +296,13 @@ html = f"""<!DOCTYPE html>
   .country-option:hover {{ background: var(--surface); }}
   .country-option input[type=checkbox] {{ accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }}
   .country-option.checked {{ color: var(--accent); }}
+  .opt-n {{ margin-left: auto; color: var(--text2); font-size: 0.75rem; padding-left: 10px; }}
+  .panel-head {{
+    padding: 7px 14px 3px; color: var(--text2); font-size: 0.68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em; user-select: none;
+  }}
+  .panel-head + .country-option {{ margin-top: 0; }}
+  .panel-head.sep {{ border-top: 1px solid var(--border); margin-top: 4px; padding-top: 8px; }}
   .count {{ color: var(--text2); font-size: 0.82rem; margin-left: auto; }}
   .wrap {{ overflow-x: auto; }}
   table {{ width: 100%; border-collapse: collapse; font-size: 0.92rem; }}
@@ -279,13 +377,17 @@ html = f"""<!DOCTYPE html>
 </style>
 </head>
 <body>
-<h1>Upcoming SRA Matches</h1>
-<div class="meta"><span id="gen-time" data-utc="{now_utc}">Generated {now_utc_str}</span> &nbsp;·&nbsp; {len(events)} matches found &nbsp;·&nbsp; <span id="next-update"></span></div>
+<h1>Upcoming Matches</h1>
+<div class="meta">SRA, IPSC and more &nbsp;·&nbsp; <span id="gen-time" data-utc="{now_utc}">Generated {now_utc_str}</span> &nbsp;·&nbsp; {len(events)} matches found &nbsp;·&nbsp; <span id="next-update"></span></div>
 <div class="toolbar">
   <div class="search-wrap"><input type="text" id="search" placeholder="Search matches or countries…" autocomplete="off"></div>
   <div class="filter-btns">
     <button class="active" data-filter="all">All</button>
     <button data-filter="open">Reg. Open</button>
+  </div>
+  <div class="country-dropdown" id="disc-dropdown">
+    <button class="country-trigger" id="disc-trigger">All disciplines ▾</button>
+    <div class="country-panel" id="disc-panel"></div>
   </div>
   <div class="country-dropdown" id="country-dropdown">
     <button class="country-trigger" id="country-trigger">All countries ▾</button>
@@ -322,10 +424,28 @@ html = f"""<!DOCTYPE html>
   var headers       = document.querySelectorAll('th[data-col]');
   var countryTrigger = document.getElementById('country-trigger');
   var countryPanel   = document.getElementById('country-panel');
+  var discTrigger    = document.getElementById('disc-trigger');
+  var discPanel      = document.getElementById('disc-panel');
 
   var sortCol = -1, sortAsc = true;
   var activeFilter    = 'all';
   var activeCountries = new Set();
+
+  // Discipline filter. SRA is what this page is for, so it starts checked - but
+  // the choice is remembered, otherwise the bot regenerating the page every 6h
+  // would reset anyone who follows IPSC instead. Empty set = show everything,
+  // same convention as the country filter above.
+  var DISC_KEY = 'sra_disciplines';
+  var activeDisciplines;
+  try {{
+    var stored = localStorage.getItem(DISC_KEY);
+    activeDisciplines = new Set(stored === null ? ['SRA'] : JSON.parse(stored));
+  }} catch (err) {{
+    activeDisciplines = new Set(['SRA']);
+  }}
+  function saveDisciplines() {{
+    try {{ localStorage.setItem(DISC_KEY, JSON.stringify([...activeDisciplines])); }} catch (err) {{}}
+  }}
 
   // Build flat data rows from the rendered HTML so sorting works
   // Each entry: {{ tr, country, sortKeys }}
@@ -455,6 +575,49 @@ html = f"""<!DOCTYPE html>
   document.addEventListener('click', function() {{ countryPanel.classList.remove('open'); }});
   countryPanel.addEventListener('click', function(e) {{ e.stopPropagation(); }});
 
+  // ── Discipline dropdown ───────────────────────────────────────────────────
+  var DISC_SECTIONS = {json.dumps(DISC_SECTIONS)};
+  function updateDiscTrigger() {{
+    var n = activeDisciplines.size;
+    discTrigger.textContent = n === 0 ? 'All disciplines ▾'
+                            : n === 1 ? [...activeDisciplines][0] + ' ▾'
+                            : n + ' disciplines ▾';
+    discTrigger.classList.toggle('active', n > 0);
+  }}
+  DISC_SECTIONS.forEach(function(section, si) {{
+    if (!section.items.length) return;
+    var h = document.createElement('div');
+    h.className = 'panel-head' + (si > 0 ? ' sep' : '');
+    h.textContent = section.title;
+    discPanel.appendChild(h);
+    section.items.forEach(function(item) {{
+      var lbl = document.createElement('label');
+      lbl.className = 'country-option';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.value = item.label;
+      cb.checked = activeDisciplines.has(item.label);
+      lbl.classList.toggle('checked', cb.checked);
+      cb.addEventListener('change', function() {{
+        if (cb.checked) activeDisciplines.add(item.label);
+        else activeDisciplines.delete(item.label);
+        lbl.classList.toggle('checked', cb.checked);
+        saveDisciplines(); updateDiscTrigger(); render();
+      }});
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode(item.label));
+      var n = document.createElement('span');
+      n.className = 'opt-n'; n.textContent = item.n;
+      lbl.appendChild(n);
+      discPanel.appendChild(lbl);
+    }});
+  }});
+  discTrigger.addEventListener('click', function(e) {{
+    e.stopPropagation(); discPanel.classList.toggle('open');
+  }});
+  document.addEventListener('click', function() {{ discPanel.classList.remove('open'); }});
+  discPanel.addEventListener('click', function(e) {{ e.stopPropagation(); }});
+  updateDiscTrigger();
+
   function cellText(tr, col) {{
     if (!tr.cells[col]) return '';
     var dv = tr.cells[col].getAttribute('data-v');
@@ -482,6 +645,7 @@ html = f"""<!DOCTYPE html>
     allGroups.forEach(function(group) {{
       if (activeCountries.size > 0 && !activeCountries.has(group.label)) return;
       var visible = group.rows.filter(function(tr) {{
+        if (activeDisciplines.size > 0 && !activeDisciplines.has(tr.getAttribute('data-d'))) return false;
         if (activeFilter === 'open' && !tr.classList.contains('row-open')) return false;
         if (!q) return true;
         var text = tr.textContent.toLowerCase();
